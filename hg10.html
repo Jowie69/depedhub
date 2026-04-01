@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HG10 Form Builder – DepEd Philippines</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;500&family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&display=swap');
+
+  :root {
+    --sun: #f5a623; --sky: #0d3b8e; --leaf: #1a7a4a; --cream: #fdf9f3;
+    --ink: #1a1a2e; --muted: #6b7280; --border: #e5e0d8;
+    --sidebar: #0d2659; --primary: #FF6B35; --secondary: #004E89;
+    --banner-accent: #F77F00; --success: #27ae60; --danger: #dc2626;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+  /* BANNER */
+  .banner-container { background:linear-gradient(135deg,#1A1A2E,#16213e); overflow:hidden; border-top:3px solid var(--banner-accent); border-bottom:3px solid var(--banner-accent); padding:.55rem 0; flex-shrink:0; z-index:100; }
+  .banner-track { display:flex; animation:bannerScroll 10s linear infinite; white-space:nowrap; }
+  @keyframes bannerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  .banner-content { display:inline-block; padding:0 2rem; color:white; font-size:1rem; font-weight:600; font-family:'Roboto Condensed',sans-serif; flex-shrink:0; }
+  .banner-content a { color:var(--banner-accent); text-decoration:none; font-weight:700; }
+  .banner-highlight { color:var(--banner-accent); font-weight:700; }
+  .banner-separator { margin:0 1rem; color:var(--banner-accent); }
+
+  /* GCASH MODAL */
+  .gcash-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.8); display:flex; align-items:center; justify-content:center; z-index:9999; backdrop-filter:blur(5px); }
+  .gcash-modal-content { background:white; border-radius:20px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.5); font-family:'Roboto Condensed',sans-serif; }
+  .gcash-modal-header { background:linear-gradient(135deg,var(--primary),var(--banner-accent)); padding:2rem; text-align:center; border-radius:20px 20px 0 0; position:relative; }
+  .gcash-modal-header h2 { font-family:'Bebas Neue',cursive; font-size:2rem; color:white; letter-spacing:2px; margin-bottom:.5rem; }
+  .gcash-modal-header p { color:rgba(255,255,255,.95); }
+  .gcash-modal-close { position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,.2); border:none; width:40px; height:40px; border-radius:50%; color:white; font-size:1.5rem; cursor:pointer; }
+  .gcash-modal-body { padding:2rem; }
+  .gcash-info { background:#f0f9ff; padding:1rem; border-radius:8px; margin:1rem 0; border-left:4px solid var(--secondary); font-size:.95rem; }
+  .gcash-info strong { color:var(--secondary); display:block; margin-bottom:.5rem; }
+  .gcash-image { max-width:100%; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.15); margin:1rem 0; border:3px solid #e0e0e0; }
+  .upload-receipt-area { border:3px dashed var(--primary); border-radius:12px; padding:1.5rem; text-align:center; background:#fff5f2; cursor:pointer; margin-top:1.5rem; }
+  .upload-receipt-area:hover { border-color:var(--banner-accent); background:#ffe8dc; }
+  .thank-you-message { background:linear-gradient(135deg,var(--success),#27ae60); color:white; padding:1.5rem; border-radius:12px; text-align:center; margin-top:1rem; }
+  .thank-you-message h3 { font-family:'Bebas Neue',cursive; font-size:1.5rem; letter-spacing:2px; }
+  .receipt-preview { max-width:100%; max-height:200px; margin-top:1rem; border-radius:8px; }
+  .modal-timer-note { text-align:center; color:#999; font-size:.82rem; margin-top:1rem; font-style:italic; }
+
+  /* APP */
+  .app-wrapper { display:flex; flex:1; overflow:hidden; }
+
+  /* SIDEBAR */
+  #sidebar { width:340px; min-width:300px; background:var(--sidebar); color:#fff; display:flex; flex-direction:column; overflow-y:auto; z-index:10; }
+  .sidebar-header { padding:18px 20px 14px; background:linear-gradient(135deg,#0d2659,#1a4a8e); border-bottom:2px solid var(--sun); }
+  .sidebar-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--sun); }
+  .sidebar-subtitle { font-size:11px; color:#a0b4d4; margin-top:4px; }
+  .sidebar-flag { display:flex; gap:3px; margin-top:10px; }
+  .flag-stripe { height:5px; border-radius:2px; }
+  .tab-nav { display:flex; background:#0a1f4a; border-bottom:1px solid rgba(255,255,255,.1); flex-shrink:0; }
+  .tab-btn { flex:1; padding:10px 4px; background:none; border:none; color:#a0b4d4; font-size:11px; font-weight:600; cursor:pointer; text-transform:uppercase; }
+  .tab-btn.active { color:var(--sun); border-bottom:2px solid var(--sun); }
+  .tab-panel { display:none; padding:14px 16px; }
+  .tab-panel.active { display:block; }
+  .form-group { margin-bottom:11px; }
+  .form-label { display:block; font-size:10px; font-weight:700; color:#7a9cc4; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+  .form-input { width:100%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:6px; color:#fff; padding:7px 10px; font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
+  .form-input:focus { border-color:var(--sun); }
+  .form-input option { color:#000; background:#fff; }
+  .form-input::placeholder { color:rgba(255,255,255,.35); }
+  textarea.form-input { resize:vertical; min-height:50px; }
+  .section-divider { font-size:10px; font-weight:700; color:var(--sun); text-transform:uppercase; letter-spacing:1px; padding:8px 0 6px; border-bottom:1px solid rgba(245,166,35,.3); margin-bottom:11px; }
+  .logo-pair { display:flex; gap:8px; }
+  .logo-upload-area { flex:1; border:2px dashed rgba(255,255,255,.2); border-radius:8px; padding:12px; text-align:center; cursor:pointer; position:relative; }
+  .logo-upload-area:hover { border-color:var(--sun); }
+  .logo-upload-area input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+  .logo-preview-small { width:48px; height:48px; object-fit:contain; margin:0 auto 5px; display:block; }
+  .logo-upload-text { font-size:10px; color:#a0b4d4; }
+  .student-list-area { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:8px; max-height:190px; overflow-y:auto; }
+  .student-item { display:flex; align-items:center; gap:6px; padding:7px 10px; border-bottom:1px solid rgba(255,255,255,.06); font-size:11px; color:#e0e8f0; cursor:pointer; }
+  .student-item:hover { background:rgba(255,255,255,.07); }
+  .student-item.active-student { background:rgba(245,166,35,.15); color:var(--sun); }
+  .student-dot { width:6px; height:6px; border-radius:50%; background:var(--leaf); flex-shrink:0; }
+  .student-dot.active-student { background:var(--sun); }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--sun); color:#1a1a00; }
+  .btn-secondary { background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
+  .btn-danger { background:rgba(220,38,38,.15); color:#ff8a80; border:1px solid rgba(220,38,38,.3); }
+  .btn-sm { padding:5px 10px; font-size:11px; }
+  .btn-group { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .scol-group { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:7px; margin-bottom:10px; overflow:hidden; }
+  .scol-head { background:rgba(255,255,255,.08); padding:7px 10px; font-size:11px; font-weight:700; color:var(--sun); display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .scol-body { padding:10px; display:none; }
+  .scol-body.open { display:block; }
+  .alert { border-radius:6px; padding:9px 13px; font-size:11px; margin-bottom:11px; }
+  .alert-info { background:rgba(59,130,246,.15); color:#93c5fd; border-left:3px solid #3b82f6; }
+  .alert-warning { background:rgba(245,166,35,.1); color:#fbbf24; border-left:3px solid var(--sun); }
+  .alert-success { background:rgba(39,174,96,.15); color:#86efac; border-left:3px solid var(--success); }
+
+  /* Global cols badge */
+  .global-col-badge { background:rgba(245,166,35,.12); border:1px solid rgba(245,166,35,.35); border-radius:6px; padding:7px 10px; font-size:10px; color:var(--sun); margin-bottom:10px; line-height:1.5; }
+
+  /* MAIN */
+  #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .toolbar { background:#fff; border-bottom:1px solid var(--border); padding:10px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .toolbar-title { font-weight:700; font-size:14px; color:var(--sky); margin-right:auto; }
+  .tbtn { padding:6px 13px; border-radius:6px; border:none; cursor:pointer; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; }
+  .tbtn-primary { background:var(--sun); color:#1a1a00; }
+  .tbtn-secondary { background:#f1f5f9; color:var(--sky); border:1px solid #d1d5db; }
+
+  #preview-container { flex:1; overflow-y:auto; background:#ccc9c0; padding:24px; display:flex; flex-direction:column; align-items:center; gap:0; }
+
+  .edit-badge { background:#fffbeb; border:1px solid #fcd34d; border-radius:6px; padding:6px 12px; font-size:.72rem; color:#92400e; display:flex; align-items:center; gap:6px; margin-bottom:12px; width:100%; max-width:780px; }
+  .edit-dot { width:6px; height:6px; border-radius:50%; background:#f59e0b; flex-shrink:0; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .status-bar { background:#f8f9fa; border-top:1px solid var(--border); padding:6px 16px; font-size:11px; color:var(--muted); display:flex; align-items:center; gap:16px; }
+  .status-dot { width:7px; height:7px; border-radius:50%; background:var(--leaf); }
+
+  /* STANDARD MODALS */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#fff; border-radius:12px; width:90%; max-width:620px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+  .modal-header { padding:18px 22px 14px; border-bottom:2px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-weight:700; font-size:16px; color:var(--sky); font-family:'Playfair Display',serif; }
+  .modal-close { background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted); }
+  .modal-body { padding:18px 22px; }
+  .modal-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+  .form-input-light { width:100%; padding:8px 11px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; }
+  .form-input-light:focus { border-color:var(--sky); }
+  textarea.form-input-light { resize:vertical; min-height:100px; font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .csv-template-box { background:#f8f9fa; border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'JetBrains Mono',monospace; font-size:10.5px; white-space:pre; overflow-x:auto; margin:8px 0; }
+  .modal-alert { border-radius:6px; padding:9px 13px; font-size:12px; margin-bottom:11px; }
+  .modal-alert-info { background:#e3f2fd; color:#1565c0; border-left:3px solid #1976d2; }
+  .modal-alert-warning { background:#fff8e1; color:#f57f17; border-left:3px solid #f9a825; }
+  .modal-alert-success { background:#e8f5e9; color:#2e7d32; border-left:3px solid #43a047; }
+
+  /* ═══════════════════════════════════════
+     HG10 — Legal paper 8.5" × 14"
+  ═══════════════════════════════════════ */
+
+  .sw {
+    width: 100%;
+    max-width: 780px;
+    margin-bottom: 48px;
+    flex-shrink: 0;
+  }
+  .sw:last-child { margin-bottom: 0; }
+
+  .hg10-page {
+    background: white;
+    width: 100%;
+    min-height: 1344px;
+    padding: 36px 44px 28px;
+    box-shadow: 0 3px 24px rgba(0,0,0,.18);
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 10pt;
+    line-height: 1.35;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+  .hg10-page + .hg10-page {
+    border-top: 3px dashed #bbb;
+    margin-top: 0;
+  }
+
+  .p2-body { display: flex; flex-direction: column; }
+  .p2-data { }
+  .p2-sigs { flex-shrink: 0; margin-top: 16px; }
+
+  .doc-annex { font-style:italic; font-size:9pt; margin-bottom:10px; color:#222; flex-shrink:0; }
+  .doc-logo-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; flex-shrink:0; }
+  .doc-logo-row .ctr { text-align:center; flex:1; font-size:10.5pt; line-height:1.7; }
+  .doc-logo { width:72px; height:72px; object-fit:contain; cursor:pointer; flex-shrink:0; }
+  .doc-logo-ph { width:72px; height:72px; border:1.5px dashed #bbb; display:flex; align-items:center; justify-content:center; font-size:7pt; color:#bbb; text-align:center; cursor:pointer; line-height:1.4; flex-shrink:0; }
+  .doc-logo-ph:hover { border-color:#1565c0; color:#1565c0; }
+
+  .doc-title { text-align:center; font-weight:bold; font-size:12pt; margin:8px 0 2px; text-transform:uppercase; flex-shrink:0; }
+  .doc-grade  { text-align:center; font-weight:bold; font-size:11pt; margin-bottom:22px; flex-shrink:0; }
+
+  .doc-name-row { display:flex; align-items:flex-end; margin-bottom:8px; font-size:11pt; font-weight:bold; flex-shrink:0; }
+  .name-part { display:flex; align-items:flex-end; gap:4px; flex:1; }
+  .lrn-part  { display:flex; align-items:flex-end; gap:4px; margin-left:20px; }
+  .ul      { border-bottom:1.5px solid #000; display:inline-block; vertical-align:bottom; }
+  .name-ul { flex:1; min-width:220px; }
+  .lrn-ul  { min-width:170px; }
+
+  .doc-advisory { font-style:italic; font-size:9.5pt; margin-bottom:8px; flex-shrink:0; }
+
+  .p1-tbl-wrap { flex: 1; }
+
+  /* ── ASSESSMENT TABLE ── */
+  .doc-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    table-layout: fixed;
+  }
+  .doc-tbl th, .doc-tbl td {
+    border: 1px solid #333;
+    padding: 2px 2px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .tc {
+    text-align: left !important;
+    padding: 3px 5px !important;
+    vertical-align: middle !important;
+    line-height: 1.3;
+    font-size: 9pt;
+  }
+  .qrow td {
+    background: #d4d4d4 !important;
+    font-style: italic;
+    font-weight: bold;
+    text-align: left !important;
+    padding-left: 6px !important;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+  .sh { font-weight:bold; font-size:9.5pt; padding: 3px 0 !important; }
+  .ck {
+    cursor: pointer;
+    user-select: none;
+    font-size: 11pt;
+    padding: 1px 0 !important;
+    line-height: 1;
+  }
+  .ck:hover { background: #dbeafe; }
+  .ck.on    { font-weight: bold; }
+  .syc {
+    vertical-align: top !important;
+    text-align: left !important;
+    padding: 5px 7px !important;
+    font-size: 8.5pt;
+    line-height: 1.8;
+  }
+  .syc .sy-underline { border-bottom:1px solid #000; display:block; min-height:14px; }
+  .syc .sy-inline    { border-bottom:1px solid #000; display:inline-block; min-width:55px; vertical-align:bottom; }
+  .scale-cell {
+    vertical-align: top !important;
+    text-align: left !important;
+    padding: 8px 8px !important;
+    font-size: 9pt;
+    line-height: 2.05;
+  }
+  .comp-label-row td {
+    font-weight: bold;
+    font-size: 9.5pt;
+    padding: 4px 4px !important;
+    text-align: center;
+  }
+
+  /* ── SIGNATURE SECTION ── */
+  .sig-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .sig-tbl .s-blank { border:none !important; background:white; }
+  .sig-tbl .s-col   { border:1px solid #333; vertical-align:top; padding:10px 10px; text-align:center; }
+  .sig-blk { margin-bottom: 12px; }
+  .sig-blk:last-child { margin-bottom: 0; }
+  .sig-space { height: 30px; display:block; }
+  .sig-ln { border-top:1px solid #000; display:block; width:82%; margin: 0 auto 2px; }
+  .sig-nm {
+    font-size: 9pt; font-weight:bold; display:block; text-align:center;
+    text-decoration:underline; min-height:13px; margin-bottom:0; line-height:1.2;
+  }
+  .sig-lb { font-size:8.5pt; text-align:center; line-height:1.4; margin-top:2px; }
+
+  .pg-num { text-align:center; font-size:9.5pt; margin-top:10px; flex-shrink:0; }
+
+  [contenteditable] { outline:none; border-radius:2px; }
+  [contenteditable]:hover:not(:focus) { background:rgba(245,166,35,.1); }
+  [contenteditable]:focus { background:rgba(245,166,35,.22); outline:1px dashed var(--sun); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { height:auto; overflow:visible; }
+    #sidebar,.toolbar,.status-bar,.banner-container,
+    .gcash-modal-overlay,.edit-badge,.modal-overlay { display:none !important; }
+    #preview-container { padding:0; background:none; overflow:visible; display:block; }
+    .sw { max-width:100%; margin-bottom:0; }
+    .hg10-page {
+      box-shadow: none;
+      min-height: 0;
+      height: 100vh;
+      padding: 0.45in 0.5in;
+      overflow: hidden;
+      break-after: page;
+      page-break-after: always;
+    }
+    .hg10-page + .hg10-page {
+      border-top: none;
+      break-before: page;
+      page-break-before: always;
+    }
+    [contenteditable] { background:none !important; outline:none !important; }
+    .ck { cursor:default; }
+    .doc-logo-ph { border:1px dashed #ccc !important; }
+  }
+  @page { size: legal portrait; margin: 0; }
+
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:3px; }
+  #preview-container::-webkit-scrollbar-thumb { background:#aaa; }
+</style>
+</head>
+<body>
+
+<!-- BANNER -->
+<div class="banner-container">
+  <div class="banner-track">
+    <div class="banner-content">
+      Need help with <span class="banner-highlight">Thesis</span>, <span class="banner-highlight">Business</span>, or <span class="banner-highlight">Projects</span>?
+      <span class="banner-separator">★</span>
+      Contact me on Facebook, <a href="https://www.facebook.com/jowieflores.freelancer/" target="_blank">Jowie Orlina Flores</a>!
+      <span class="banner-separator">★</span>
+      <span class="banner-highlight">Web/Game Developer</span>, <span class="banner-highlight">Graphic Designer</span>, <span class="banner-highlight">2D/3D Animator</span>, <span class="banner-highlight">Draftsman</span>, <span class="banner-highlight">Video Editor</span>.
+      <span class="banner-separator">★</span>
+    </div>
+    <div class="banner-content">
+      Need help with <span class="banner-highlight">Thesis</span>, <span class="banner-highlight">Business</span>, or <span class="banner-highlight">Projects</span>?
+      <span class="banner-separator">★</span>
+      Contact me on Facebook, <a href="https://www.facebook.com/jowieflores.freelancer/" target="_blank">Jowie Orlina Flores</a>!
+      <span class="banner-separator">★</span>
+      <span class="banner-highlight">Web/Game Developer</span>, <span class="banner-highlight">Graphic Designer</span>, <span class="banner-highlight">2D/3D Animator</span>, <span class="banner-highlight">Draftsman</span>, <span class="banner-highlight">Video Editor</span>.
+      <span class="banner-separator">★</span>
+    </div>
+  </div>
+</div>
+
+<div class="app-wrapper">
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">HG10 Form Builder</div>
+    <div class="sidebar-subtitle">DepEd Philippines — Homeroom Guidance Annex 5</div>
+    <div class="sidebar-flag">
+      <div class="flag-stripe" style="background:#0038a8;flex:1"></div>
+      <div class="flag-stripe" style="background:#ce1126;flex:1"></div>
+      <div class="flag-stripe" style="background:#fcd116;flex:.4"></div>
+    </div>
+  </div>
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('header')">Header</button>
+    <button class="tab-btn" onclick="switchTab('school')">Columns</button>
+    <button class="tab-btn" onclick="switchTab('students')">Students</button>
+    <button class="tab-btn" onclick="switchTab('ratings')">Ratings</button>
+    <button class="tab-btn" onclick="switchTab('sigs')">Sigs</button>
+  </div>
+
+  <!-- HEADER TAB -->
+  <div class="tab-panel active" id="tab-header">
+    <div class="section-divider">📋 Document Settings</div>
+    <div class="form-group">
+      <label class="form-label">Form Title</label>
+      <textarea class="form-input" id="inp-title" rows="2" oninput="rerender()">HOMEROOM GUIDANCE LEARNER'S DEVELOPMENT ASSESSMENT</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Grade Level Subtitle</label>
+      <input class="form-input" id="inp-grade" value="GRADE 1 -3 (Primary Level)" oninput="rerender()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Advisory Instruction</label>
+      <textarea class="form-input" id="inp-advisory" rows="2" oninput="rerender()">To the class adviser: Check the box to indicate your assessment guided by the scale below.</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Annex Reference</label>
+      <input class="form-input" id="inp-annex" value="HG Annex 5-Attachment to SF10 per DM-OUCI-346-2021" oninput="rerender()">
+    </div>
+    <div class="section-divider">🖼️ Logos</div>
+    <div class="logo-pair">
+      <div class="logo-upload-area" onclick="document.getElementById('li-L').click()">
+        <input type="file" id="li-L" accept="image/*" onchange="upLogo(this,'L')">
+        <img id="lp-L" class="logo-preview-small" src="" style="display:none">
+        <div class="logo-upload-text" id="ll-L">📤 Left Logo</div>
+      </div>
+      <div class="logo-upload-area" onclick="document.getElementById('li-R').click()">
+        <input type="file" id="li-R" accept="image/*" onchange="upLogo(this,'R')">
+        <img id="lp-R" class="logo-preview-small" src="" style="display:none">
+        <div class="logo-upload-text" id="ll-R">📤 Right Logo</div>
+      </div>
+    </div>
+    <div style="font-size:9.5px;color:#7a9cc4;margin-top:6px">Left = DepEd seal · Right = School logo</div>
+  </div>
+
+  <!-- COLUMNS TAB -->
+  <div class="tab-panel" id="tab-school">
+    <div class="global-col-badge">
+      ✨ These fields are <strong>shared across all 3 school-year columns</strong> and apply to every student's form.
+    </div>
+    <div class="section-divider">🏫 Column 1 — School Year 1</div>
+    <div id="schoolCol0"></div>
+    <div class="section-divider">🏫 Column 2 — School Year 2</div>
+    <div id="schoolCol1"></div>
+    <div class="section-divider">🏫 Column 3 — School Year 3</div>
+    <div id="schoolCol2"></div>
+  </div>
+
+  <!-- STUDENTS TAB -->
+  <div class="tab-panel" id="tab-students">
+    <div class="alert alert-info">💡 All students shown in preview. Select one to update info below.</div>
+    <div class="section-divider">👤 Add / Import</div>
+    <div class="btn-group" style="margin-bottom:12px">
+      <button class="btn btn-secondary btn-sm" onclick="openModal('modal-add')">+ Add Student</button>
+      <button class="btn btn-secondary btn-sm" onclick="openModal('modal-csv')">📥 CSV Import</button>
+      <button class="btn btn-secondary btn-sm" onclick="dlTemplate()">📄 Template</button>
+    </div>
+    <div class="student-list-area" id="student-list">
+      <div class="student-item" style="color:#7a9cc4;font-style:italic">No students yet.</div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="section-divider">📝 Selected Student</div>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="std-name" placeholder="DELA CRUZ, JUAN MIGUEL" oninput="updateCur()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">LRN</label>
+        <input class="form-input" id="std-lrn" placeholder="12-digit LRN" oninput="updateCur()">
+      </div>
+      <div class="section-divider" style="margin-top:6px">📚 Per-Column Data</div>
+      <div class="alert alert-warning" style="font-size:10px;margin-bottom:8px">Learning Modality and Parent/Guardian are unique per student. Set them here or via CSV import.</div>
+      <div id="std-percol-fields"></div>
+    </div>
+    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" onclick="clearAll()">✕ Clear All Students</button></div>
+  </div>
+
+  <!-- RATINGS TAB -->
+  <div class="tab-panel" id="tab-ratings">
+    <div class="alert alert-warning">🎯 Rate the selected student. Or click score cells directly on the form.</div>
+    <div id="ratings-panel"><div style="color:#7a9cc4;font-size:11px;text-align:center;padding:20px">Select a student first.</div></div>
+  </div>
+
+  <!-- SIGS TAB -->
+  <div class="tab-panel" id="tab-sigs">
+    <div class="section-divider">✍️ Signatory Names</div>
+    <div class="alert alert-info" style="font-size:10px">Appear on Page 2. Col 1 shows name above line; Cols 2 & 3 show just lines.</div>
+    <div class="form-group"><label class="form-label">Adviser — Column 1</label><input class="form-input" id="sig-adv1" placeholder="FIRSTNAME M. LASTNAME" oninput="rerender()"></div>
+    <div class="form-group"><label class="form-label">Guidance Counselor — Column 1</label><input class="form-input" id="sig-gc1" placeholder="FIRSTNAME M. LASTNAME" oninput="rerender()"></div>
+    <div class="form-group"><label class="form-label">School Head — Column 1</label><input class="form-input" id="sig-head1" placeholder="FIRSTNAME M. LASTNAME" oninput="rerender()"></div>
+    <div class="alert alert-info" style="font-size:10px;margin-top:4px">Parent/Guardian name is per-student. Set it in the Students tab or via CSV.</div>
+  </div>
+</div><!-- end sidebar -->
+
+<!-- MAIN -->
+<div id="main">
+  <div class="toolbar">
+    <div class="toolbar-title">🇵🇭 HG10 Form Preview — All Students · Scrollable · 2 Pages Each (Legal Size)</div>
+    <button class="tbtn tbtn-secondary" onclick="openModal('modal-add')">+ Add Student</button>
+    <button class="tbtn tbtn-primary" onclick="window.print()">🖨️ Print All</button>
+    <button class="tbtn tbtn-secondary" onclick="openModal('modal-help')">❓ Help</button>
+  </div>
+  <div id="preview-container">
+    <div class="edit-badge" style="display:none" id="editBadge">
+      <div class="edit-dot"></div>
+      <strong>Live Edit Mode</strong> — click any text on the form to edit · click score cells to toggle ✓
+    </div>
+    <div id="preview" style="width:100%;max-width:780px;display:flex;flex-direction:column;align-items:stretch;gap:0">
+      <div style="text-align:center;padding:80px 20px;color:#888">
+        <svg width="56" height="56" fill="none" stroke="#bbb" stroke-width="1.2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h3 style="margin-top:12px;font-family:'Playfair Display',serif;color:#666">No Forms Yet</h3>
+        <p style="font-size:13px;margin-top:6px;color:#999">Add a student to begin.</p>
+      </div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span id="status-text">Ready — Click any text in the preview to edit directly</span>
+    <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px" id="student-count">0 students</span>
+  </div>
+</div>
+
+</div><!-- .app-wrapper -->
+
+<!-- GCASH MODAL -->
+<div class="gcash-modal-overlay" id="gcash-modal" style="display:none">
+  <div class="gcash-modal-content">
+    <div class="gcash-modal-header">
+      <button class="gcash-modal-close" onclick="closeGcash()">×</button>
+      <h2>💝 SUPPORT THIS PROJECT</h2>
+      <p>Help keep this tool free and running!</p>
+    </div>
+    <div class="gcash-modal-body" id="gcash-body">
+      <p style="margin-bottom:1rem;font-size:1rem;line-height:1.6">This tool is <strong>completely free</strong>! If it helped you, consider a small donation. 🙏</p>
+      <div class="gcash-info"><strong>📱 Send via GCash:</strong><div style="font-size:1.1rem;margin-top:.5rem">Scan QR or send to: <strong>09394911140 Jowie Flores</strong></div></div>
+      <img src="/images/gcash.jpeg" alt="GCash QR" class="gcash-image">
+      <div style="padding:1rem;background:#fff3cd;border-radius:8px;border:2px solid #ffc107;margin-top:1rem"><strong style="color:#856404">💡 Upload payment receipt to stop seeing this popup!</strong></div>
+      <div class="upload-receipt-area" onclick="document.getElementById('receipt-inp').click()">
+        <div style="font-size:2rem;margin-bottom:.5rem">📸</div>
+        <div style="font-weight:bold;color:var(--secondary)">Upload Payment Receipt</div>
+        <div style="font-size:.85rem;color:#666;margin-top:.25rem">Screenshot of your GCash receipt</div>
+      </div>
+      <input type="file" id="receipt-inp" accept="image/*" style="display:none" onchange="handleReceipt(this)">
+      <div class="modal-timer-note">This appears every 10–15 sec. Upload receipt to stop permanently.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Add Student</span><button class="modal-close" onclick="closeModal('modal-add')">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-alert modal-alert-info" style="margin-bottom:14px">Learning Modality and Parent/Guardian can also be set in the <strong>Students tab</strong> after adding.</div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="display:block;font-weight:600;margin-bottom:4px;font-size:13px">Full Name</label>
+        <input class="form-input-light" id="new-name" placeholder="DELA CRUZ, JUAN MIGUEL">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="display:block;font-weight:600;margin-bottom:4px;font-size:13px">LRN</label>
+        <input class="form-input-light" id="new-lrn" placeholder="123456789012">
+      </div>
+      <hr style="border:none;border-top:1px solid #e5e0d8;margin:12px 0">
+      <p style="font-size:12px;color:#555;margin-bottom:10px;font-style:italic">Per school-year column data (optional — can fill later):</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><label style="display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:3px">LM — Col 1</label><input class="form-input-light" id="new-lm0" placeholder="e.g. F2F"></div>
+        <div><label style="display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:3px">LM — Col 2</label><input class="form-input-light" id="new-lm1" placeholder="e.g. F2F"></div>
+        <div><label style="display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:3px">LM — Col 3</label><input class="form-input-light" id="new-lm2" placeholder="e.g. F2F"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div><label style="display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:3px">Parent — Col 1</label><input class="form-input-light" id="new-par0" placeholder="Name"></div>
+        <div><label style="display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:3px">Parent — Col 2</label><input class="form-input-light" id="new-par1" placeholder="Name"></div>
+        <div><label style="display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:3px">Parent — Col 3</label><input class="form-input-light" id="new-par2" placeholder="Name"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-add')" style="padding:8px 14px;border-radius:6px;border:1px solid #d1d5db;background:#f1f5f9;cursor:pointer;font-size:13px">Cancel</button>
+      <button onclick="addStudent()" style="padding:8px 14px;border-radius:6px;border:none;background:var(--sun);color:#1a1a00;font-weight:600;cursor:pointer;font-size:13px">Add Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV MODAL -->
+<div class="modal-overlay" id="modal-csv">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">CSV Bulk Import</span><button class="modal-close" onclick="closeModal('modal-csv')">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-alert modal-alert-info">Import multiple students with all per-student fields at once.</div>
+      <div class="csv-template-box">Name,LRN,LM1,LM2,LM3,Parent1,Parent2,Parent3
+DELA CRUZ JUAN,123456780001,Face-to-Face,Face-to-Face,Modular,DELA CRUZ PEDRO,DELA CRUZ PEDRO,DELA CRUZ PEDRO
+SANTOS MARIA,123456780002,Face-to-Face,Modular,,SANTOS ROSA,SANTOS ROSA,</div>
+      <div class="modal-alert modal-alert-warning" style="margin-top:8px">
+        <strong>Columns:</strong> Name, LRN, LM1, LM2, LM3 (Learning Modality per column), Parent1, Parent2, Parent3 (Parent/Guardian per column). LM and Parent fields are optional.
+      </div>
+      <div class="btn-group" style="margin-bottom:12px">
+        <button onclick="dlTemplate()" style="padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f1f5f9;cursor:pointer;font-size:11px">⬇️ Download Template</button>
+        <label style="padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f1f5f9;cursor:pointer;font-size:11px">📤 Upload CSV<input type="file" accept=".csv" style="display:none" onchange="handleCSVUpload(this)"></label>
+      </div>
+      <p style="font-size:12px;margin-bottom:6px;font-weight:600">Or paste CSV:</p>
+      <textarea class="form-input-light" id="csv-paste" rows="7" placeholder="Name,LRN,LM1,LM2,LM3,Parent1,Parent2,Parent3&#10;..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-csv')" style="padding:8px 14px;border-radius:6px;border:1px solid #d1d5db;background:#f1f5f9;cursor:pointer;font-size:13px">Cancel</button>
+      <button onclick="importCSV()" style="padding:8px 14px;border-radius:6px;border:none;background:var(--sun);color:#1a1a00;font-weight:600;cursor:pointer;font-size:13px">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="modal-help">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">How to Use HG10 Form Builder</span><button class="modal-close" onclick="closeModal('modal-help')">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-alert modal-alert-success">🇵🇭 DepEd HG Annex 5 — SF10 DM-OUCI-346-2021 · Legal Size</div>
+      <ol style="font-size:13px;line-height:2.2;padding-left:20px">
+        <li><strong>Header Tab</strong> — Set title, grade level, advisory, annex ref, upload logos.</li>
+        <li><strong>Columns Tab</strong> — Fill 3 school-year columns. <em>School Year, School, Grade, Section, Adviser</em> are shared globally (apply to all students). <em>Learning Modality</em> and <em>Parent/Guardian</em> are per-student.</li>
+        <li><strong>Students Tab</strong> — Add one by one or bulk-import via CSV. Each student has their own Learning Modality (×3 columns) and Parent/Guardian (×3 columns).</li>
+        <li><strong>CSV Format:</strong> <code>Name, LRN, LM1, LM2, LM3, Parent1, Parent2, Parent3</code></li>
+        <li><strong>Ratings Tab</strong> — Select a student and set their scores per competency per column.</li>
+        <li><strong>Sigs Tab</strong> — Set adviser, counselor, school head names for Page 2.</li>
+        <li><strong>Click any text</strong> on the form to edit it live.</li>
+        <li><strong>Click any score cell</strong> to toggle the ✓ checkmark.</li>
+        <li><strong>Print All</strong> — prints every student, 2 pages each on legal size.</li>
+      </ol>
+      <div class="modal-alert modal-alert-warning" style="margin-top:12px">⚠️ Set print size to Legal (8.5×14) and margins to Minimum for best results.</div>
+    </div>
+    <div class="modal-footer"><button onclick="closeModal('modal-help')" style="padding:8px 14px;border-radius:6px;border:none;background:var(--sun);color:#1a1a00;font-weight:600;cursor:pointer;font-size:13px">Got it!</button></div>
+  </div>
+</div>
+
+<!-- Inline logo file inputs -->
+<input type="file" id="iL" accept="image/*" style="display:none" onchange="upLogo(this,'L')">
+<input type="file" id="iR" accept="image/*" style="display:none" onchange="upLogo(this,'R')">
+
+<script>
+/* ─── COMPETENCY DATA ─── */
+const COMPS = [
+  { q:'1st QUARTER', items:[] },
+  { q:null, items:[
+    'Value oneself',
+    'Value others',
+    'Respect individual differences',
+    'Gain understanding of oneself and others',
+  ]},
+  { q:'2nd QUARTER', items:[] },
+  { q:null, items:[
+    'Share the lessons learned from school and community that can be used in daily living',
+    'Apply lessons from home, school, and community to daily living with consideration to family and society',
+    'Examine the different factors in decision-making for the achievement of success',
+    'Provide proper steps toward responsible decision-making',
+    'Evaluate experiences in decision-making towards achieving common good',
+    'Gather information about life, profession, and vocation',
+    'Strengthen the connection among knowledge, skills and roles of parents or guardians and significant adults in choosing a profession, vocation, and future plans',
+  ]},
+  { q:'3rd QUARTER', items:[] },
+  { q:null, items:[
+    'Prepare using knowledge and skills toward academic success',
+    'Apply effective ways of protecting oneself and others',
+    'Live effective ways in resolving issues that involve oneself and others',
+    'Share skills helpful to solve problems',
+  ]},
+  { q:'4th QUARTER', items:[] },
+  { q:null, items:[
+    'Participate in school activities relevant to the needs of the community',
+    'Demonstrate academic excellence based on global needs',
+    'Live ways that respect and protect the environment',
+    'Engage oneself in meaningful programs and initiatives for the common good',
+    'Strengthen self-empowerment to respond to the needs of the community',
+    'Respond to personal and social needs that can contribute to the promotion of international standards',
+    'State steps to fulfill the goal in life',
+  ]},
+];
+
+const FLAT = [];
+COMPS.forEach(g => g.items.forEach(it => FLAT.push(it)));
+
+const P1G = COMPS.slice(0, 4);  // Q1 + Q2
+const P2G = COMPS.slice(4);     // Q3 + Q4
+
+/* ─── STATE ─── */
+let students = [];
+let cur = 0;
+let logos = { L:'', R:'' };
+
+// Shared global column fields: sy, school, grade, section, adviser
+// Per-student: lm[0..2], parent[0..2]
+let cols = [0,1,2].map(() => ({ sy:'', school:'', grade:'', section:'', adviser:'' }));
+
+/* ─── GCASH ─── */
+let hasDonated = localStorage.getItem('hg10_donated') === 'true';
+let gcashTimer = null;
+function showGcash(){ document.getElementById('gcash-modal').style.display='flex'; }
+function closeGcash(){ document.getElementById('gcash-modal').style.display='none'; }
+function handleReceipt(inp){
+  const f = inp.files[0]; if(!f || !f.type.startsWith('image/')) return;
+  const r = new FileReader();
+  r.onload = e => {
+    hasDonated = true; localStorage.setItem('hg10_donated','true');
+    if(gcashTimer) clearInterval(gcashTimer);
+    document.getElementById('gcash-body').innerHTML = `<div class="thank-you-message"><h3>🎉 THANK YOU!</h3><p style="font-size:1.1rem;margin:1rem 0">Your support means the world!</p><img src="${e.target.result}" alt="Receipt" class="receipt-preview"></div>`;
+  };
+  r.readAsDataURL(f);
+}
+document.getElementById('gcash-modal').addEventListener('click', e => { if(e.target === e.currentTarget) closeGcash(); });
+if(!hasDonated){ setTimeout(showGcash, 10000); gcashTimer = setInterval(showGcash, 15000); }
+
+/* ─── TABS ─── */
+function switchTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id === 'ratings') buildRatings();
+  if(id === 'students') buildPerColFields();
+}
+
+/* ─── MODALS ─── */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if(e.target === el) el.classList.remove('open'); }));
+
+/* ─── LOGOS ─── */
+function upLogo(inp, side){
+  const f = inp.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    logos[side] = e.target.result;
+    document.getElementById('lp-'+side).src = e.target.result;
+    document.getElementById('lp-'+side).style.display = 'block';
+    document.getElementById('ll-'+side).textContent = '✅ '+f.name;
+    renderAll(); toast('Logo updated ✓');
+  };
+  r.readAsDataURL(f);
+}
+
+/* ─── SCHOOL COLS SIDEBAR (Global shared fields) ─── */
+function buildColsSidebar(){
+  [0,1,2].forEach(ci => {
+    const c = document.getElementById('schoolCol'+ci);
+    c.innerHTML = `
+      ${gfi(ci,'sy','School Year','2024-2025')}
+      ${gfi(ci,'school','School Name','')}
+      ${gfi(ci,'grade','Grade','')}
+      ${gfi(ci,'section','Section','')}
+      ${gfi(ci,'adviser','Name of Adviser','')}
+    `;
+    c.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        cols[ci][inp.dataset.k] = inp.value;
+        renderAll();
+      });
+    });
+  });
+}
+function gfi(ci, k, label, ph){
+  return `<div class="form-group"><label class="form-label">${label}</label><input class="form-input" data-k="${k}" placeholder="${ph}" value="${esc(cols[ci][k]||'')}"></div>`;
+}
+
+/* ─── PER-COL FIELDS FOR SELECTED STUDENT (sidebar) ─── */
+function buildPerColFields(){
+  const cont = document.getElementById('std-percol-fields');
+  if(!students.length){
+    cont.innerHTML = '<div style="color:#7a9cc4;font-size:10px;font-style:italic">No student selected.</div>';
+    return;
+  }
+  const s = students[cur];
+  let h = '';
+  [0,1,2].forEach(ci => {
+    h += `<div style="margin-bottom:10px;background:rgba(255,255,255,.04);border-radius:6px;padding:8px 9px;border:1px solid rgba(255,255,255,.08)">
+      <div style="font-size:10px;font-weight:700;color:var(--sun);margin-bottom:6px">Column ${ci+1}</div>
+      <div class="form-group" style="margin-bottom:7px">
+        <label class="form-label">Learning Modality</label>
+        <input class="form-input" id="std-lm${ci}" placeholder="e.g. Face-to-Face" value="${esc(s.lm[ci]||'')}" oninput="updateCurPerCol(${ci})">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Parent / Guardian Name</label>
+        <input class="form-input" id="std-par${ci}" placeholder="Full name" value="${esc(s.parent[ci]||'')}" oninput="updateCurPerCol(${ci})">
+      </div>
+    </div>`;
+  });
+  cont.innerHTML = h;
+}
+
+/* ─── STUDENTS ─── */
+function mkS(name, lrn, lm, parent){
+  return {
+    name: name||'',
+    lrn: lrn||'',
+    lm: [lm&&lm[0]||'', lm&&lm[1]||'', lm&&lm[2]||''],
+    parent: [parent&&parent[0]||'', parent&&parent[1]||'', parent&&parent[2]||''],
+    scores: FLAT.map(() => ['','',''])
+  };
+}
+
+function addStudent(){
+  const name = document.getElementById('new-name').value.trim();
+  const lrn  = document.getElementById('new-lrn').value.trim();
+  if(!name){ alert('Enter a student name.'); return; }
+  const lm = [0,1,2].map(i => document.getElementById('new-lm'+i).value.trim());
+  const par = [0,1,2].map(i => document.getElementById('new-par'+i).value.trim());
+  students.push(mkS(name, lrn, lm, par));
+  closeModal('modal-add');
+  ['new-name','new-lrn','new-lm0','new-lm1','new-lm2','new-par0','new-par1','new-par2'].forEach(id => document.getElementById(id).value = '');
+  cur = students.length - 1;
+  renderStudentList(); renderAll(); buildPerColFields(); toast('Student added!');
+}
+
+function selStudent(i){
+  cur = i;
+  document.getElementById('std-name').value = students[i].name;
+  document.getElementById('std-lrn').value  = students[i].lrn;
+  renderStudentList(); buildRatings(); buildPerColFields();
+  const w = document.querySelector(`.sw[data-i="${i}"]`);
+  if(w) w.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function updateCur(){
+  if(!students.length) return;
+  students[cur].name = document.getElementById('std-name').value;
+  students[cur].lrn  = document.getElementById('std-lrn').value;
+  renderStudentList(); rerenderOne(cur);
+}
+
+function updateCurPerCol(ci){
+  if(!students.length) return;
+  students[cur].lm[ci]     = document.getElementById('std-lm'+ci).value;
+  students[cur].parent[ci] = document.getElementById('std-par'+ci).value;
+  rerenderOne(cur);
+}
+
+function clearAll(){
+  if(!confirm('Clear all students?')) return;
+  students = []; cur = 0;
+  renderStudentList(); buildPerColFields();
+  document.getElementById('preview').innerHTML = '<div style="text-align:center;padding:60px;color:#888"><h3>All Cleared</h3></div>';
+  document.getElementById('editBadge').style.display = 'none';
+  toast('Cleared.');
+}
+
+function renderStudentList(){
+  const list = document.getElementById('student-list');
+  if(!students.length){
+    list.innerHTML = '<div class="student-item" style="color:#7a9cc4;font-style:italic">No students yet.</div>';
+    document.getElementById('student-count').textContent = '0 students';
+    return;
+  }
+  list.innerHTML = students.map((s,i) => `
+    <div class="student-item ${i===cur?'active-student':''}" onclick="selStudent(${i})">
+      <div class="student-dot ${i===cur?'active-student':''}"></div>
+      <div style="flex:1">
+        <div>${esc(s.name||'(No name)')}</div>
+        <div style="font-size:9px;opacity:.6">${esc(s.lrn||'No LRN')}</div>
+      </div>
+      <button onclick="event.stopPropagation();if(confirm('Delete?')){students.splice(${i},1);if(cur>=${i}&&cur>0)cur--;renderStudentList();renderAll();buildPerColFields();}" style="background:none;border:none;color:#ff8a80;cursor:pointer;font-size:13px">✕</button>
+    </div>`).join('');
+  document.getElementById('student-count').textContent = `${students.length} student${students.length!==1?'s':''}`;
+}
+
+/* ─── RATINGS PANEL ─── */
+function buildRatings(){
+  const panel = document.getElementById('ratings-panel');
+  if(!students.length){ panel.innerHTML = '<div style="color:#7a9cc4;font-size:11px;text-align:center;padding:20px">Select a student first.</div>'; return; }
+  const s = students[cur];
+  let h = `<div style="font-size:10px;font-weight:700;color:var(--sun);margin-bottom:8px">${esc(s.name||'–')}</div>`;
+  COMPS.forEach(g => {
+    if(g.q) h += `<div style="font-size:10px;font-weight:700;color:var(--sun);padding:5px 0 3px;border-bottom:1px solid rgba(245,166,35,.2);margin-bottom:4px">${g.q}</div>`;
+    g.items.forEach(item => {
+      const ci = FLAT.indexOf(item);
+      h += `<div style="margin-bottom:5px;background:rgba(255,255,255,.04);border-radius:5px;padding:5px 7px">
+        <div style="font-size:9px;color:#c8d8e8;margin-bottom:3px">${esc(item)}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px">
+          ${[0,1,2].map(co => `<select style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#fff;font-size:10px;padding:2px;font-family:DM Sans,sans-serif" onchange="setScore(${ci},${co},this.value)">
+            <option value="">–</option>
+            ${[4,3,2,1,0].map(v => `<option value="${v}" ${s.scores[ci]&&s.scores[ci][co]==v?'selected':''}>${v}</option>`).join('')}
+          </select>`).join('')}
+        </div>
+      </div>`;
+    });
+  });
+  panel.innerHTML = h;
+}
+
+function setScore(ci, co, val){ if(!students.length) return; students[cur].scores[ci][co] = val; rerenderOne(cur); }
+
+/* ─── CSV ─── */
+function dlTemplate(){
+  let csv = 'Name,LRN,LM1,LM2,LM3,Parent1,Parent2,Parent3\n';
+  csv += 'DELA CRUZ JUAN,123456780001,Face-to-Face,Face-to-Face,Modular,DELA CRUZ PEDRO,DELA CRUZ PEDRO,DELA CRUZ PEDRO\n';
+  csv += 'SANTOS MARIA,123456780002,Face-to-Face,Modular,,SANTOS ROSA,SANTOS ROSA,\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'HG10_template.csv'; a.click(); toast('Template downloaded!');
+}
+function handleCSVUpload(inp){ const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = e => { document.getElementById('csv-paste').value = e.target.result; }; r.readAsText(f); }
+function importCSV(){
+  const raw = document.getElementById('csv-paste').value.trim();
+  if(!raw){ alert('No data.'); return; }
+  const lines = raw.split('\n').filter(l => l.trim() && !l.startsWith('#'));
+  if(lines.length < 2){ alert('Need header + data rows.'); return; }
+  const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase());
+  let n = 0;
+  lines.slice(1).forEach(line => {
+    const cells = csvSplit(line); if(!cells[0]) return;
+    const o = {}; hdrs.forEach((h,j) => o[h] = (cells[j]||'').trim());
+    const lm = [o['lm1']||'', o['lm2']||'', o['lm3']||''];
+    const par = [o['parent1']||'', o['parent2']||'', o['parent3']||''];
+    students.push(mkS(o.name, o.lrn, lm, par)); n++;
+  });
+  closeModal('modal-csv'); document.getElementById('csv-paste').value = '';
+  cur = students.length - 1; renderStudentList(); renderAll(); buildPerColFields();
+  toast(`${n} student${n!==1?'s':''} imported!`);
+}
+function csvSplit(l){ const r=[]; let c='',q=false; for(let ch of l){ if(ch==='"')q=!q; else if(ch===','&&!q){r.push(c);c='';}else c+=ch; } r.push(c); return r; }
+
+/* ─── RENDER ─── */
+function g(id){ return document.getElementById(id).value; }
+function getD(){ return {title:g('inp-title'),grade:g('inp-grade'),advisory:g('inp-advisory'),annex:g('inp-annex')}; }
+function getSigs(){
+  return {
+    adv1: g('sig-adv1'),
+    gc1: g('sig-gc1'),
+    head1: g('sig-head1'),
+  };
+}
+
+function renderAll(){
+  const area = document.getElementById('preview');
+  area.innerHTML = '';
+  if(!students.length) return;
+  document.getElementById('editBadge').style.display = 'flex';
+  students.forEach((s,i) => {
+    const w = document.createElement('div');
+    w.className = 'sw'; w.dataset.i = i;
+    w.innerHTML = page1(s,i) + page2(s,i);
+    area.appendChild(w);
+    bind(w, i);
+  });
+}
+
+function rerenderOne(i){
+  const w = document.querySelector(`.sw[data-i="${i}"]`);
+  if(!w){ renderAll(); return; }
+  w.innerHTML = page1(students[i],i) + page2(students[i],i);
+  bind(w, i);
+}
+
+function rerender(){ renderAll(); }
+
+function bind(w, i){
+  const s = students[i];
+  w.querySelectorAll('[data-f]').forEach(el => {
+    el.addEventListener('blur', () => {
+      const f = el.dataset.f, v = el.innerText.trim();
+      if(f==='name'){ s.name=v; renderStudentList(); if(cur===i){ document.getElementById('std-name').value=v; } }
+      else if(f==='lrn'){ s.lrn=v; renderStudentList(); if(cur===i){ document.getElementById('std-lrn').value=v; } }
+      else if(f==='title') document.getElementById('inp-title').value=v;
+      else if(f==='grade') document.getElementById('inp-grade').value=v;
+      else if(f==='advisory') document.getElementById('inp-advisory').value=v;
+      else if(f==='annex') document.getElementById('inp-annex').value=v;
+      else if(f.startsWith('c-')){
+        const [,ci,k] = f.split('-'); cols[+ci][k] = v;
+        // sync sidebar input
+        const inp = document.querySelector(`#schoolCol${ci} input[data-k="${k}"]`);
+        if(inp) inp.value = v;
+        // re-render all since shared field
+        renderAll();
+      }
+      else if(f.startsWith('slm-')){
+        const ci = +f.split('-')[1];
+        s.lm[ci] = v;
+        if(cur===i){ const el2 = document.getElementById('std-lm'+ci); if(el2) el2.value=v; }
+      }
+      else if(f.startsWith('spar-')){
+        const ci = +f.split('-')[1];
+        s.parent[ci] = v;
+        if(cur===i){ const el2 = document.getElementById('std-par'+ci); if(el2) el2.value=v; }
+      }
+      else if(f.startsWith('sig-')){
+        const el2 = document.getElementById(f);
+        if(el2) el2.value = v;
+      }
+    });
+    el.addEventListener('keydown', e => { if(e.key==='Enter' && !el.dataset.ml){ e.preventDefault(); el.blur(); } });
+  });
+  // check cells
+  w.querySelectorAll('.ck').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const ci = +cell.dataset.ci, co = +cell.dataset.co, va = +cell.dataset.va;
+      const prev = s.scores[ci] && s.scores[ci][co] !== '' ? +s.scores[ci][co] : -1;
+      s.scores[ci][co] = (prev === va) ? '' : String(va);
+      const cv = s.scores[ci][co];
+      w.querySelectorAll(`.ck[data-ci="${ci}"][data-co="${co}"]`).forEach(c => {
+        const on = cv !== '' && +c.dataset.va === +cv;
+        c.textContent = on ? '✓' : '';
+        c.classList.toggle('on', on);
+      });
+      if(cur === i) buildRatings();
+    });
+  });
+  // logo clicks
+  w.querySelectorAll('[data-ls]').forEach(el => el.addEventListener('click', () => document.getElementById('i'+el.dataset.ls).click()));
+}
+
+/* ─── HTML HELPERS ─── */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function ce(f, v, ml){ return `<span contenteditable="true" data-f="${f}"${ml?' data-ml="1"':''}>${esc(v)}</span>`; }
+
+function logoEl(side){
+  const u = logos[side];
+  if(u) return `<img class="doc-logo" src="${u}" data-ls="${side}" title="Click to change">`;
+  return `<div class="doc-logo-ph" data-ls="${side}" title="Click to upload">${side==='L'?'Left<br>Logo':'Right<br>Logo'}</div>`;
+}
+
+function CG(){
+  return `<colgroup><col style="width:32%">` +
+    Array(15).fill('<col style="width:4.53%">').join('') +
+  `</colgroup>`;
+}
+
+// syCell now uses global cols for sy/school/grade/section/adviser
+// and per-student lm/parent
+function syCell(ci, s){
+  const c = cols[ci];
+  return `<td colspan="5" class="syc">
+    <div><b>School Year:</b> ${ce('c-'+ci+'-sy', c.sy)}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div><b>School:</b></div>
+    <div class="sy-underline">${ce('c-'+ci+'-school', c.school)}</div>
+    <div style="margin-top:2px"><b>Grade:</b> <span class="sy-inline">${ce('c-'+ci+'-grade', c.grade)}</span></div>
+    <div style="margin-top:2px"><b>Section:</b> <span class="sy-inline">${ce('c-'+ci+'-section', c.section)}</span></div>
+    <div style="margin-top:3px"><b>Learning Modality:</b></div>
+    <div class="sy-underline">${ce('slm-'+ci, s.lm[ci])}</div>
+    <div style="margin-top:4px;border-top:1px solid #555;padding-top:2px"><b>Name of Section Adviser:</b></div>
+    <div class="sy-underline">${ce('c-'+ci+'-adviser', c.adviser)}</div>
+  </td>`;
+}
+
+function scoreHdrs(){
+  return [4,3,2,1,0, 4,3,2,1,0, 4,3,2,1,0].map(n => `<th class="sh">${n}</th>`).join('');
+}
+
+function dataRows(s, groups){
+  let h = '';
+  groups.forEach(g => {
+    if(g.q){
+      h += `<tr class="qrow"><td colspan="16"><em>${g.q}</em></td></tr>`;
+    }
+    g.items.forEach(item => {
+      const ci = FLAT.indexOf(item);
+      h += `<tr><td class="tc">${esc(item)}</td>`;
+      for(let co = 0; co < 3; co++){
+        const sc = s.scores[ci] ? s.scores[ci][co] : '';
+        for(let va = 4; va >= 0; va--){
+          const on = sc !== '' && +sc === va;
+          h += `<td class="ck${on?' on':''}" data-ci="${ci}" data-co="${co}" data-va="${va}">${on?'✓':''}</td>`;
+        }
+      }
+      h += '</tr>';
+    });
+  });
+  return h;
+}
+
+/* ─── PAGE 1 ─── */
+function page1(s, i){
+  const d = getD();
+  return `<div class="hg10-page" data-pg="1">
+  <div class="doc-annex">${ce('annex', d.annex)}</div>
+  <div class="doc-logo-row">
+    ${logoEl('L')}
+    <div class="ctr">
+      <div><strong>Republic of the Philippines</strong></div>
+      <div><strong>Department of Education</strong></div>
+    </div>
+    ${logoEl('R')}
+  </div>
+  <div class="doc-title">${ce('title', d.title)}</div>
+  <div class="doc-grade">${ce('grade', d.grade)}</div>
+  <div style="margin-bottom:14px"></div>
+  <div class="doc-name-row">
+    <div class="name-part">
+      <label>Name of Learner:</label>&nbsp;
+      <span class="ul name-ul">&nbsp;${ce('name', s.name)}&nbsp;</span>
+    </div>
+    <div class="lrn-part">
+      <label>LRN:</label>&nbsp;
+      <span class="ul lrn-ul">&nbsp;${ce('lrn', s.lrn)}&nbsp;</span>
+    </div>
+  </div>
+  <div class="doc-advisory">${ce('advisory', d.advisory, true)}</div>
+  <div class="p1-tbl-wrap">
+  <table class="doc-tbl">
+    ${CG()}
+    <thead>
+      <tr>
+        <td rowspan="2" class="scale-cell">
+          <strong>0-&nbsp; No Chance to Observe</strong><br>
+          <strong>1-&nbsp; Needs Improvement</strong><br>
+          <strong>2-&nbsp; Developing</strong><br>
+          <strong>3-&nbsp; Sufficiently Developed</strong><br>
+          <strong>4-&nbsp; Developed and<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Commendable</strong>
+        </td>
+        ${syCell(0,s)}${syCell(1,s)}${syCell(2,s)}
+      </tr>
+      <tr>${scoreHdrs()}</tr>
+      <tr class="comp-label-row">
+        <td class="tc-label" style="font-weight:bold;font-size:9pt;border:1px solid #444;padding:3px;text-align:center;">Competency</td>
+        <td colspan="5" style="border:1px solid #444;background:white"></td>
+        <td colspan="5" style="border:1px solid #444;background:white"></td>
+        <td colspan="5" style="border:1px solid #444;background:white"></td>
+      </tr>
+    </thead>
+    <tbody>
+      ${dataRows(s, P1G)}
+    </tbody>
+  </table>
+  </div>
+  <div class="pg-num">Page 1 of 2</div>
+</div>`;
+}
+
+/* ─── PAGE 2 ─── */
+function page2(s, i){
+  const d = getD();
+  const sg = getSigs();
+
+  function sigBlkCol0(nameVal, fkey, label){
+    return `<div class="sig-blk">
+      <span class="sig-nm">${ce(fkey, nameVal)}</span>
+      <span class="sig-ln"></span>
+      <div class="sig-lb">${label}</div>
+    </div>`;
+  }
+  function sigBlkOther(label){
+    return `<div class="sig-blk">
+      <span class="sig-space"></span>
+      <span class="sig-ln"></span>
+      <div class="sig-lb">${label}</div>
+    </div>`;
+  }
+  // Per-student parent/guardian sig blocks
+  function sigBlkParentCol0(ci){
+    return `<div class="sig-blk">
+      <span class="sig-nm">${ce('spar-'+ci, s.parent[ci])}</span>
+      <span class="sig-ln"></span>
+      <div class="sig-lb">Name and Signature of<br>Parent/Guardian</div>
+    </div>`;
+  }
+
+  const sigLabels3 = [
+    'Name and Signature of<br>Adviser',
+    'Name and Signature of<br>Guidance Counselor/<br>Designate',
+    'Name and Signature of<br>School Head',
+  ];
+  const sigKeys3 = ['sig-adv1','sig-gc1','sig-head1'];
+  const sigVals3 = [sg.adv1, sg.gc1, sg.head1];
+
+  // col0 = named sigs for adv/gc/head + per-student parent for col 0
+  const col0 = sigLabels3.map((lbl,k) => sigBlkCol0(sigVals3[k]||'', sigKeys3[k], lbl)).join('')
+             + sigBlkParentCol0(0);
+  // col1 = blank lines for adv/gc/head + per-student parent for col 1
+  const col1 = sigLabels3.map(lbl => sigBlkOther(lbl)).join('')
+             + `<div class="sig-blk">
+                  <span class="sig-nm">${ce('spar-1', s.parent[1])}</span>
+                  <span class="sig-ln"></span>
+                  <div class="sig-lb">Name and Signature of<br>Parent/Guardian</div>
+                </div>`;
+  // col2 = blank lines + per-student parent for col 2
+  const col2 = sigLabels3.map(lbl => sigBlkOther(lbl)).join('')
+             + `<div class="sig-blk">
+                  <span class="sig-nm">${ce('spar-2', s.parent[2])}</span>
+                  <span class="sig-ln"></span>
+                  <div class="sig-lb">Name and Signature of<br>Parent/Guardian</div>
+                </div>`;
+
+  return `<div class="hg10-page" data-pg="2">
+  <div class="doc-annex">${ce('annex', d.annex)}</div>
+  <div class="p2-body">
+    <div class="p2-data">
+      <table class="doc-tbl">
+        ${CG()}
+        <tbody>
+          ${dataRows(s, P2G)}
+        </tbody>
+      </table>
+    </div>
+    <div class="p2-sigs">
+      <table class="sig-tbl">
+        <colgroup>
+          <col style="width:32%">
+          <col style="width:22.67%">
+          <col style="width:22.67%">
+          <col style="width:22.67%">
+        </colgroup>
+        <tbody>
+          <tr>
+            <td class="s-blank"></td>
+            <td class="s-col">${col0}</td>
+            <td class="s-col">${col1}</td>
+            <td class="s-col">${col2}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="pg-num">Page 2 of 2</div>
+</div>`;
+}
+
+/* ─── MISC ─── */
+function toast(msg){
+  let t = document.getElementById('__toast');
+  if(!t){ t = document.createElement('div'); t.id='__toast'; Object.assign(t.style,{position:'fixed',bottom:'22px',right:'22px',background:'#0d2659',color:'white',padding:'9px 16px',borderRadius:'8px',fontSize:'.82rem',zIndex:'99999',transform:'translateY(60px)',opacity:'0',transition:'all .3s',pointerEvents:'none',fontFamily:'DM Sans,sans-serif'}); document.body.appendChild(t); }
+  t.textContent = msg; t.style.transform = 'translateY(0)'; t.style.opacity = '1';
+  clearTimeout(t._t); t._t = setTimeout(() => { t.style.transform='translateY(60px)'; t.style.opacity='0'; }, 2800);
+}
+
+/* ─── INIT ─── */
+buildColsSidebar();
+students.push(mkS('DELA CRUZ, JUAN MIGUEL', '123456789012', ['Face-to-Face','Face-to-Face','Modular'], ['DELA CRUZ, PEDRO SR.','DELA CRUZ, PEDRO SR.','DELA CRUZ, PEDRO SR.']));
+renderStudentList();
+selStudent(0);
+buildPerColFields();
+renderAll();
+document.getElementById('status-text').textContent = '✅ HG10 Form Builder ready! Legal size — 2 pages per student.';
+</script>
+</body>
+</html>

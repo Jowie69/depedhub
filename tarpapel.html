@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Tarpapel Maker - Poster Tiler</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --accent: #F77F00;
+            --dark: #1A1A2E;
+            --light: #F8F9FA;
+            --border: #E0E0E0;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1.5rem;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2" fill="white" opacity="0.1"/></svg>');
+            background-size: 20px 20px;
+        }
+
+        .header h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3rem;
+            color: white;
+            letter-spacing: 4px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            }
+            to {
+                text-shadow: 3px 3px 20px rgba(255, 255, 255, 0.5), 3px 3px 6px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .banner-container {
+            background: linear-gradient(135deg, #1A1A2E 0%, #16213e 100%);
+            overflow: hidden;
+            position: relative;
+            border-top: 3px solid var(--accent);
+            border-bottom: 3px solid var(--accent);
+            padding: 1rem 0;
+        }
+
+        .banner-track {
+            display: flex;
+            animation: scroll 10s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .banner-content {
+            display: inline-block;
+            padding: 0 2rem;
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .banner-content a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .banner-content a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+        }
+
+        .banner-highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .banner-separator {
+            margin: 0 1rem;
+            color: var(--accent);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 0;
+            min-height: 700px;
+        }
+
+        .controls {
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2rem;
+            border-right: 3px solid var(--primary);
+            overflow-y: auto;
+            max-height: calc(100vh - 250px);
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.4s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .control-group:nth-child(1) { animation-delay: 0.1s; }
+        .control-group:nth-child(2) { animation-delay: 0.2s; }
+        .control-group:nth-child(3) { animation-delay: 0.3s; }
+        .control-group:nth-child(4) { animation-delay: 0.4s; }
+        .control-group:nth-child(5) { animation-delay: 0.5s; }
+        .control-group:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .control-group select,
+        .control-group input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Roboto Condensed', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .size-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .unit-label {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .upload-area {
+            border: 3px dashed var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: #fff5f2;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.has-image {
+            border-color: var(--success);
+            background: #f0fff4;
+            padding: 1rem;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            color: var(--secondary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .uploaded-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .button-group {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Roboto Condensed', sans-serif;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:not(:disabled)::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:not(:disabled):hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-pdf:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-jpeg {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-jpeg:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+        }
+
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+        }
+
+        .preview-container {
+            padding: 2rem;
+            background: #f0f0f0;
+            overflow: auto;
+            position: relative;
+        }
+
+        .preview-grid {
+            display: grid;
+            gap: 10px;
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .page-tile {
+            background: white;
+            border: 2px solid var(--secondary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .page-tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .page-tile canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .page-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0, 78, 137, 0.9);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            padding: 1.5rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            border-top: 3px solid var(--secondary);
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+            animation: popIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.95;
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-design-message {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+            font-size: 1.1rem;
+        }
+
+        .no-design-message .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .orientation-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .orientation-btn {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .orientation-btn:hover {
+            border-color: var(--accent);
+            background: #fff5f2;
+        }
+
+        .orientation-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .orientation-icon {
+            font-size: 2rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.4s ease-out;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2rem;
+            color: white;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-header p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .gcash-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .gcash-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            margin: 1rem 0;
+            border: 3px solid var(--border);
+        }
+
+        .gcash-info {
+            background: #f0f9ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .gcash-info strong {
+            color: var(--secondary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-receipt-area {
+            border: 3px dashed var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            background: #fff5f2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+        }
+
+        .upload-receipt-area:hover {
+            border-color: var(--accent);
+            background: #ffe8dc;
+            transform: translateY(-2px);
+        }
+
+        .upload-receipt-area.has-receipt {
+            border-color: var(--success);
+            background: #f0fff4;
+        }
+
+        .receipt-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .thank-you-message {
+            background: linear-gradient(135deg, var(--success) 0%, #27ae60 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1rem;
+            animation: popIn 0.5s ease-out;
+        }
+
+        .thank-you-message h3 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .modal-timer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                border-right: none;
+                border-bottom: 3px solid var(--primary);
+                max-height: none;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const PAPER_SIZES = {
+            'Letter': { width: 8.5, height: 11, unit: 'inches' },
+            'Legal': { width: 8.5, height: 14, unit: 'inches' },
+            'A4': { width: 210, height: 297, unit: 'mm' },
+            'A3': { width: 297, height: 420, unit: 'mm' },
+            'Tabloid': { width: 11, height: 17, unit: 'inches' },
+        };
+
+        function TarpapelMaker() {
+            const [paperSize, setPaperSize] = useState('Letter');
+            const [orientation, setOrientation] = useState('portrait');
+            const [columns, setColumns] = useState(3);
+            const [rows, setRows] = useState(3);
+            const [unit, setUnit] = useState('feet');
+            const [targetWidth, setTargetWidth] = useState(6);
+            const [targetHeight, setTargetHeight] = useState(4);
+            const [uploadedImage, setUploadedImage] = useState(null);
+            const [imageElement, setImageElement] = useState(null);
+            const [tiles, setTiles] = useState([]);
+            const [showModal, setShowModal] = useState(false);
+            const [hasDonated, setHasDonated] = useState(false);
+            const [receiptImage, setReceiptImage] = useState(null);
+            const fileInputRef = useRef(null);
+            const receiptInputRef = useRef(null);
+            const modalTimerRef = useRef(null);
+
+            const PIXELS_PER_INCH = 300;
+
+            // Check if user has already donated (stored in localStorage)
+            useEffect(() => {
+                const donated = localStorage.getItem('tarpapel_donated');
+                if (donated === 'true') {
+                    setHasDonated(true);
+                }
+            }, []);
+
+            // Modal timer - show every 10 seconds if not donated
+            useEffect(() => {
+                if (!hasDonated) {
+                    // Show modal after 10 seconds initially
+                    const initialTimer = setTimeout(() => {
+                        setShowModal(true);
+                    }, 10000);
+
+                    // Set up recurring timer
+                    modalTimerRef.current = setInterval(() => {
+                        setShowModal(true);
+                    }, 15000); // Show every 15 seconds
+
+                    return () => {
+                        clearTimeout(initialTimer);
+                        if (modalTimerRef.current) {
+                            clearInterval(modalTimerRef.current);
+                        }
+                    };
+                }
+            }, [hasDonated]);
+
+            const convertToInches = (value, fromUnit) => {
+                if (fromUnit === 'feet') return value * 12;
+                if (fromUnit === 'meters') return value * 39.3701;
+                return value;
+            };
+
+            const paperDimensions = PAPER_SIZES[paperSize];
+            let paperWidthInches = paperDimensions.unit === 'mm' 
+                ? paperDimensions.width / 25.4 
+                : paperDimensions.width;
+            let paperHeightInches = paperDimensions.unit === 'mm'
+                ? paperDimensions.height / 25.4
+                : paperDimensions.height;
+
+            // Swap dimensions for landscape orientation
+            if (orientation === 'landscape') {
+                [paperWidthInches, paperHeightInches] = [paperHeightInches, paperWidthInches];
+            }
+
+            const targetWidthInches = convertToInches(targetWidth, unit);
+            const targetHeightInches = convertToInches(targetHeight, unit);
+
+            const totalPages = columns * rows;
+            const finalWidthInches = paperWidthInches * columns;
+            const finalHeightInches = paperHeightInches * rows;
+            const finalAreaSqFt = (finalWidthInches * finalHeightInches) / 144;
+
+            useEffect(() => {
+                if (imageElement) {
+                    generateTiles();
+                }
+            }, [paperSize, orientation, columns, rows, imageElement]);
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            setUploadedImage(event.target.result);
+                            setImageElement(img);
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const clearDesign = () => {
+                setUploadedImage(null);
+                setImageElement(null);
+                setTiles([]);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+            };
+
+            const handleReceiptUpload = (e) => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setReceiptImage(event.target.result);
+                        setHasDonated(true);
+                        localStorage.setItem('tarpapel_donated', 'true');
+                        
+                        // Clear the interval
+                        if (modalTimerRef.current) {
+                            clearInterval(modalTimerRef.current);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const closeModal = () => {
+                setShowModal(false);
+            };
+
+            const generateTiles = () => {
+                if (!imageElement) return;
+
+                const newTiles = [];
+                const previewScale = 0.3; // Scale for preview display
+
+                // Calculate dimensions for each page in pixels at print resolution
+                const pageWidthPx = paperWidthInches * PIXELS_PER_INCH;
+                const pageHeightPx = paperHeightInches * PIXELS_PER_INCH;
+
+                // Calculate total canvas size
+                const totalWidthPx = pageWidthPx * columns;
+                const totalHeightPx = pageHeightPx * rows;
+
+                // Calculate scale to fit image to total canvas
+                const scaleX = totalWidthPx / imageElement.width;
+                const scaleY = totalHeightPx / imageElement.height;
+                const scale = Math.min(scaleX, scaleY);
+
+                // Calculate scaled image dimensions
+                const scaledImageWidth = imageElement.width * scale;
+                const scaledImageHeight = imageElement.height * scale;
+
+                // Center the image
+                const offsetX = (totalWidthPx - scaledImageWidth) / 2;
+                const offsetY = (totalHeightPx - scaledImageHeight) / 2;
+
+                // Generate each tile
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < columns; col++) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = pageWidthPx;
+                        canvas.height = pageHeightPx;
+                        const ctx = canvas.getContext('2d');
+
+                        // Fill with white background
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
+
+                        // Calculate which part of the image to draw
+                        const srcX = (col * pageWidthPx - offsetX) / scale;
+                        const srcY = (row * pageHeightPx - offsetY) / scale;
+                        const srcWidth = pageWidthPx / scale;
+                        const srcHeight = pageHeightPx / scale;
+
+                        // Only draw if this tile intersects with the image
+                        if (srcX < imageElement.width && srcY < imageElement.height &&
+                            srcX + srcWidth > 0 && srcY + srcHeight > 0) {
+                            
+                            // Clip to image bounds
+                            const clipSrcX = Math.max(0, srcX);
+                            const clipSrcY = Math.max(0, srcY);
+                            const clipSrcWidth = Math.min(srcWidth, imageElement.width - clipSrcX);
+                            const clipSrcHeight = Math.min(srcHeight, imageElement.height - clipSrcY);
+
+                            const destX = (clipSrcX - srcX) * scale;
+                            const destY = (clipSrcY - srcY) * scale;
+                            const destWidth = clipSrcWidth * scale;
+                            const destHeight = clipSrcHeight * scale;
+
+                            ctx.drawImage(
+                                imageElement,
+                                clipSrcX, clipSrcY, clipSrcWidth, clipSrcHeight,
+                                destX, destY, destWidth, destHeight
+                            );
+                        }
+
+                        newTiles.push({
+                            canvas,
+                            col,
+                            row,
+                            label: `Page ${row * columns + col + 1}`,
+                            position: `Row ${row + 1}, Col ${col + 1}`
+                        });
+                    }
+                }
+
+                setTiles(newTiles);
+            };
+
+            const downloadAllPDF = async () => {
+                if (!imageElement || tiles.length === 0) {
+                    alert('Please upload an image first!');
+                    return;
+                }
+
+                const loading = document.querySelector('.loading');
+                loading.classList.add('active');
+
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: orientation === 'landscape' ? 'landscape' : 'portrait',
+                        unit: 'in',
+                        format: [paperWidthInches, paperHeightInches]
+                    });
+
+                    for (let i = 0; i < tiles.length; i++) {
+                        if (i > 0) {
+                            pdf.addPage();
+                        }
+
+                        const imgData = tiles[i].canvas.toDataURL('image/jpeg', 0.95);
+                        pdf.addImage(imgData, 'JPEG', 0, 0, paperWidthInches, paperHeightInches);
+                        
+                        // Add page label
+                        pdf.setFontSize(10);
+                        pdf.setTextColor(100);
+                        pdf.text(tiles[i].label + ' - ' + tiles[i].position, 0.2, 0.2);
+                    }
+
+                    pdf.save(`tarpapel-${columns}x${rows}-${orientation}-${totalPages}pages.pdf`);
+                } catch (error) {
+                    alert('Error generating PDF: ' + error.message);
+                } finally {
+                    loading.classList.remove('active');
+                }
+            };
+
+            const downloadAllJPEG = async () => {
+                if (!imageElement || tiles.length === 0) {
+                    alert('Please upload an image first!');
+                    return;
+                }
+
+                const loading = document.querySelector('.loading');
+                loading.classList.add('active');
+
+                try {
+                    const zip = new JSZip();
+                    const folder = zip.folder(`tarpapel-${columns}x${rows}`);
+
+                    for (let i = 0; i < tiles.length; i++) {
+                        const blob = await new Promise(resolve => {
+                            tiles[i].canvas.toBlob(resolve, 'image/jpeg', 0.95);
+                        });
+                        folder.file(`page-${i + 1}-row${tiles[i].row + 1}-col${tiles[i].col + 1}.jpg`, blob);
+                    }
+
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    const url = URL.createObjectURL(content);
+                    const link = document.createElement('a');
+                    link.download = `tarpapel-${columns}x${rows}-${orientation}-${totalPages}pages.zip`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    alert('Error generating JPEG files: ' + error.message);
+                } finally {
+                    loading.classList.remove('active');
+                }
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>JOWIE'S TARPAPEL MAKER</h1>
+                        <p>Split Large Images into Printable Pages • Print & Assemble into Giant Posters</p>
+                    </div>
+
+                    <div className="banner-container">
+                        <div className="banner-track">
+                            <div className="banner-content">
+                                Need help with <span className="banner-highlight">Thesis</span>, <span className="banner-highlight">Business</span>, or <span className="banner-highlight">Projects</span>? 
+                                <span className="banner-separator">★</span>
+                                Contact me on Facebook, <a href="https://www.facebook.com/jowieflores.freelancer/" target="_blank" rel="noopener noreferrer">Jowie Orlina Flores</a>! 
+                                <span className="banner-separator">★</span>
+                                <span className="banner-highlight">Web/Game Developer</span>, <span className="banner-highlight">Graphic Designer</span>, <span className="banner-highlight">2D/3D Animator</span>, <span className="banner-highlight">Draftsman</span>, <span className="banner-highlight">Video Editor</span>.
+                                <span className="banner-separator">★</span>
+                            </div>
+                            <div className="banner-content">
+                                Need help with <span className="banner-highlight">Thesis</span>, <span className="banner-highlight">Business</span>, or <span className="banner-highlight">Projects</span>? 
+                                <span className="banner-separator">★</span>
+                                Contact me on Facebook, <a href="https://www.facebook.com/jowieflores.freelancer/" target="_blank" rel="noopener noreferrer">Jowie Orlina Flores</a>! 
+                                <span className="banner-separator">★</span>
+                                <span className="banner-highlight">Web/Game Developer</span>, <span className="banner-highlight">Graphic Designer</span>, <span className="banner-highlight">2D/3D Animator</span>, <span className="banner-highlight">Draftsman</span>, <span className="banner-highlight">Video Editor</span>.
+                                <span className="banner-separator">★</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="main-content">
+                        <div className="controls">
+                            <div className="control-group">
+                                <label>Upload Your Design</label>
+                                <div 
+                                    className={`upload-area ${uploadedImage ? 'has-image' : ''}`}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    {uploadedImage ? (
+                                        <>
+                                            <div className="upload-icon">✅</div>
+                                            <img 
+                                                src={uploadedImage} 
+                                                alt="Uploaded design" 
+                                                className="uploaded-preview"
+                                            />
+                                            <div className="upload-hint" style={{marginTop: '0.5rem'}}>
+                                                Click to change
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="upload-icon">📤</div>
+                                            <div className="upload-text">Click to Upload Image</div>
+                                            <div className="upload-hint">
+                                                PNG, JPG, JPEG supported
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                <input 
+                                    ref={fileInputRef}
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={handleFileUpload}
+                                />
+                            </div>
+
+                            <div className="control-group">
+                                <label>Paper Size (per page)</label>
+                                <select 
+                                    value={paperSize} 
+                                    onChange={(e) => setPaperSize(e.target.value)}
+                                >
+                                    {Object.keys(PAPER_SIZES).map(size => (
+                                        <option key={size} value={size}>
+                                            {size} ({PAPER_SIZES[size].width} × {PAPER_SIZES[size].height} {PAPER_SIZES[size].unit})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="control-group">
+                                <label>Paper Orientation</label>
+                                <select 
+                                    value={orientation} 
+                                    onChange={(e) => setOrientation(e.target.value)}
+                                >
+                                    <option value="portrait">📄 Portrait (Vertical)</option>
+                                    <option value="landscape">📃 Landscape (Horizontal)</option>
+                                </select>
+                                <div className="info-box" style={{marginTop: '0.75rem'}}>
+                                    <strong>Current Page Size:</strong>
+                                    {paperWidthInches.toFixed(2)}" × {paperHeightInches.toFixed(2)}"
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <label>Grid Layout (How to Split)</label>
+                                <div className="input-group">
+                                    <div>
+                                        <label style={{fontSize: '0.75rem', marginBottom: '0.25rem'}}>Columns</label>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            max="10" 
+                                            value={columns}
+                                            onChange={(e) => setColumns(Math.max(1, parseInt(e.target.value) || 1))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{fontSize: '0.75rem', marginBottom: '0.25rem'}}>Rows</label>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            max="10" 
+                                            value={rows}
+                                            onChange={(e) => setRows(Math.max(1, parseInt(e.target.value) || 1))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="info-box">
+                                    <strong>Final Size:</strong>
+                                    {finalWidthInches.toFixed(1)}" × {finalHeightInches.toFixed(1)}" 
+                                    ({(finalWidthInches / 12).toFixed(2)} ft × {(finalHeightInches / 12).toFixed(2)} ft)
+                                </div>
+                            </div>
+
+                            <div className="button-group">
+                                <button 
+                                    className="btn-pdf" 
+                                    onClick={downloadAllPDF}
+                                    disabled={!uploadedImage || tiles.length === 0}
+                                >
+                                    <span>📄 Download All Pages (PDF)</span>
+                                </button>
+                                <button 
+                                    className="btn-jpeg" 
+                                    onClick={downloadAllJPEG}
+                                    disabled={!uploadedImage || tiles.length === 0}
+                                >
+                                    <span>🖼️ Download All Pages (ZIP)</span>
+                                </button>
+                                {uploadedImage && (
+                                    <button 
+                                        className="btn-clear" 
+                                        onClick={clearDesign}
+                                    >
+                                        <span>🗑️ Clear Design</span>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="preview-container">
+                            {tiles.length > 0 ? (
+                                <div 
+                                    className="preview-grid"
+                                    style={{
+                                        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                                    }}
+                                >
+                                    {tiles.map((tile, index) => (
+                                        <div key={index} className="page-tile">
+                                            <canvas 
+                                                width={tile.canvas.width}
+                                                height={tile.canvas.height}
+                                                ref={(canvas) => {
+                                                    if (canvas) {
+                                                        const ctx = canvas.getContext('2d');
+                                                        ctx.drawImage(tile.canvas, 0, 0);
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '150px',
+                                                    height: `${150 * (paperHeightInches / paperWidthInches)}px`
+                                                }}
+                                            />
+                                            <div className="page-label">{tile.label}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : uploadedImage ? (
+                                <div className="no-design-message">
+                                    <div className="icon">⚙️</div>
+                                    <div>Processing image...</div>
+                                </div>
+                            ) : (
+                                <div className="no-design-message">
+                                    <div className="icon">🎨</div>
+                                    <div>Upload an image to split it into printable pages</div>
+                                    <div style={{marginTop: '1rem', fontSize: '0.9rem'}}>
+                                        Your image will be divided into {columns}×{rows} pages
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="stats">
+                        <div className="stat-item">
+                            <div className="stat-value">{columns} × {rows}</div>
+                            <div className="stat-label">Grid Layout</div>
+                        </div>
+                        <div className="stat-item">
+                            <div className="stat-value">{totalPages}</div>
+                            <div className="stat-label">Total Pages</div>
+                        </div>
+                        <div className="stat-item">
+                            <div className="stat-value">{finalWidthInches.toFixed(1)}"</div>
+                            <div className="stat-label">Final Width</div>
+                        </div>
+                        <div className="stat-item">
+                            <div className="stat-value">{finalHeightInches.toFixed(1)}"</div>
+                            <div className="stat-label">Final Height</div>
+                        </div>
+                        <div className="stat-item">
+                            <div className="stat-value">{finalAreaSqFt.toFixed(2)}</div>
+                            <div className="stat-label">Total Area (sq ft)</div>
+                        </div>
+                    </div>
+
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Generating files...</div>
+                        <div style={{fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.8}}>
+                            Please wait
+                        </div>
+                    </div>
+
+                    {showModal && (
+                        <div className="modal-overlay" onClick={closeModal}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <button className="modal-close" onClick={closeModal}>×</button>
+                                    <h2>💝 SUPPORT THIS PROJECT</h2>
+                                    <p>Help keep this tool free and running!</p>
+                                </div>
+                                <div className="modal-body">
+                                    {!receiptImage ? (
+                                        <>
+                                            <div className="gcash-section">
+                                                <p style={{marginBottom: '1rem', fontSize: '1rem', lineHeight: '1.6'}}>
+                                                    This tool is <strong>completely free</strong> to use! If it helped you save time and money, 
+                                                    consider sending any amount as a token of appreciation. 🙏
+                                                </p>
+                                                
+                                                <div className="gcash-info">
+                                                    <strong>📱 Send via GCash:</strong>
+                                                    <div style={{fontSize: '1.1rem', marginTop: '0.5rem'}}>
+                                                        Scan the QR code below or send to my GCash number: 09394911140 Jowie Flores
+                                                    </div>
+                                                </div>
+
+                                                <img 
+                                                    src="/images/gcash.jpeg" 
+                                                    alt="GCash QR Code" 
+                                                    className="gcash-image"
+                                                />
+
+                                                <div style={{marginTop: '1rem', padding: '1rem', background: '#fff3cd', borderRadius: '8px', border: '2px solid #ffc107'}}>
+                                                    <strong style={{color: '#856404', fontSize: '1rem'}}>
+                                                        💡 Upload your payment receipt below to stop seeing this popup!
+                                                    </strong>
+                                                </div>
+                                            </div>
+
+                                            <div 
+                                                className="upload-receipt-area"
+                                                onClick={() => receiptInputRef.current?.click()}
+                                            >
+                                                <div style={{fontSize: '2rem', marginBottom: '0.5rem'}}>📸</div>
+                                                <div style={{fontWeight: 'bold', color: 'var(--secondary)', marginBottom: '0.5rem'}}>
+                                                    Upload Payment Receipt
+                                                </div>
+                                                <div style={{fontSize: '0.85rem', color: '#666'}}>
+                                                    Screenshot of your GCash receipt
+                                                </div>
+                                            </div>
+                                            <input 
+                                                ref={receiptInputRef}
+                                                type="file" 
+                                                accept="image/*"
+                                                onChange={handleReceiptUpload}
+                                                style={{display: 'none'}}
+                                            />
+
+                                            <div className="modal-timer">
+                                                This modal appears every 10-15 seconds. Upload receipt to stop it permanently.
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="thank-you-message">
+                                            <h3>🎉 THANK YOU!</h3>
+                                            <p style={{fontSize: '1.1rem', marginBottom: '1rem'}}>
+                                                Your support means the world! You won't see this popup anymore.
+                                            </p>
+                                            <img 
+                                                src={receiptImage} 
+                                                alt="Receipt" 
+                                                className="receipt-preview"
+                                            />
+                                            <p style={{fontSize: '0.9rem', marginTop: '1rem', opacity: 0.9}}>
+                                                Enjoy using the tool! 🚀
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TarpapelMaker />, document.getElementById('root'));
+    </script>
+</body>
+</html>

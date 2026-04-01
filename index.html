@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DepEd Teacher Hub — Central Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --deped-blue:   #0c1017;
+  --deped-red:    #ce1126;
+  --deped-sun:    #FCD116;
+  --blue-dark:    #002580;
+  --blue-mid:     #1a50c4;
+  --blue-light:   #e8eeff;
+  --red-light:    #fdecea;
+  --bg:           #f0f4ff;
+  --surface:      #ffffff;
+  --surface2:     #f7f9ff;
+  --surface3:     #eef1fa;
+  --border:       #dde3f5;
+  --border2:      #c8d0e8;
+  --text:         #0d1b3e;
+  --text2:        #4a5578;
+  --text3:        #8892b0;
+  --green:        #0d6e3d;
+  --green-light:  #e6f7ef;
+  --amber:        #c05f00;
+  --amber-light:  #fff4e5;
+  --purple:       #6b21a8;
+  --purple-light: #f3e8ff;
+  --teal:         #0e7490;
+  --teal-light:   #e0f7fa;
+  --gold:         #b8860b;
+  --gold-light:   #fffbeb;
+  --gold-mid:     #f59e0b;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --shadow:       0 1px 3px rgba(0,56,168,.07), 0 4px 16px rgba(0,56,168,.06);
+  --shadow-lg:    0 8px 32px rgba(0,56,168,.13);
+  --sidebar-w:    256px;
+  --topbar-h:     60px;
+  --font:         'Plus Jakarta Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ── TOP BAR ─────────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--deped-blue);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 200;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+}
+.topbar::after {
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:3px;
+  background: linear-gradient(90deg, var(--deped-red), var(--deped-sun), var(--deped-red));
+  background-size: 200% 100%;
+  animation: flagStripe 4s linear infinite;
+}
+@keyframes flagStripe { 0%{background-position:0%} 100%{background-position:200%} }
+
+.tb-brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.tb-logo {
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,.15);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  border: 1px solid rgba(255,255,255,.25);
+  flex-shrink: 0;
+}
+.tb-brand-text h1 { font-size: 14px; font-weight: 800; color: #fff; letter-spacing: -.2px; }
+.tb-brand-text p  { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 1px; }
+
+.tb-divider { width: 1px; height: 28px; background: rgba(255,255,255,.18); margin: 0 4px; }
+
+.tb-pills { display: flex; gap: 3px; }
+.tb-pill {
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.7);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tb-pill:hover { background: rgba(255,255,255,.12); color: #fff; }
+.tb-pill.active { background: rgba(255,255,255,.2); color: #fff; }
+
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.sy-badge {
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,255,255,.15);
+  color: rgba(255,255,255,.9);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.2);
+  font-family: var(--font-mono);
+}
+
+.pro-topbar-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 800;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: 1px solid rgba(255,215,0,.4);
+  box-shadow: 0 2px 8px rgba(245,158,11,.4);
+  cursor: pointer;
+  transition: all .15s;
+}
+.pro-topbar-badge:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,158,11,.5); }
+.pro-topbar-badge.free-mode {
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.8);
+  border-color: rgba(255,255,255,.2);
+  box-shadow: none;
+}
+.pro-topbar-badge.free-mode:hover { background: rgba(255,255,255,.2); color: #fff; }
+
+.save-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 700;
+  background: var(--deped-red);
+  color: #fff;
+  border: none; cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s;
+  box-shadow: 0 2px 8px rgba(206,17,38,.35);
+}
+.save-btn:hover { background: #e01530; transform: translateY(-1px); }
+.save-btn svg { width: 13px; height: 13px; }
+
+/* ── APP BODY ─────────────────────────────────────────── */
+.app-body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  box-shadow: 2px 0 12px rgba(0,56,168,.05);
+}
+
+.sidebar-school {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--deped-blue) 0%, var(--blue-mid) 100%);
+}
+.school-name-sb { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.4; margin-bottom: 3px; }
+.school-meta-sb { font-size: 10px; color: rgba(255,255,255,.65); }
+.school-grade-sb {
+  display: inline-block;
+  margin-top: 7px;
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.25);
+}
+
+.sidebar-pro-cta {
+  margin: 10px 10px 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1.5px solid #f59e0b;
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+  display: block;
+}
+.sidebar-pro-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,158,11,.2); }
+.sidebar-pro-cta.is-pro {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border-color: var(--green);
+}
+.spc-top { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.spc-icon { font-size: 16px; }
+.spc-label { font-size: 11px; font-weight: 800; color: #92400e; }
+.spc-label.pro-active { color: var(--green); }
+.spc-desc { font-size: 10px; color: #92400e; opacity: .8; line-height: 1.4; }
+.spc-desc.pro-active { color: var(--green); }
+
+.sb-section { padding: 6px 10px 2px; }
+.sb-section-label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text3);
+  padding: 10px 8px 4px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sb-section-label::after { content:''; flex: 1; height: 1px; background: var(--border); }
+
+.sb-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-bottom: 1px;
+  text-decoration: none;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all .13s;
+  position: relative;
+  border: 1px solid transparent;
+}
+.sb-nav-item:hover { background: var(--blue-light); color: var(--deped-blue); border-color: rgba(0,56,168,.1); }
+.sb-nav-item.active {
+  background: linear-gradient(90deg, var(--blue-light), #eef3ff);
+  color: var(--deped-blue);
+  font-weight: 700;
+  border-color: rgba(0,56,168,.15);
+}
+.sb-nav-item.active::before {
+  content:'';
+  position:absolute;
+  left:0;top:20%;bottom:20%;
+  width:3px;
+  background: var(--deped-blue);
+  border-radius:0 3px 3px 0;
+}
+.sb-nav-item.pro-locked { opacity: .65; }
+.sb-nav-item.pro-locked:hover {
+  background: var(--gold-light);
+  border-color: rgba(245,158,11,.3);
+  color: var(--gold);
+  opacity: 1;
+}
+.sb-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  background: var(--surface3);
+  flex-shrink: 0;
+  transition: background .13s;
+}
+.sb-nav-item:hover .sb-icon, .sb-nav-item.active .sb-icon { background: rgba(0,56,168,.12); }
+.sb-badge {
+  margin-left: auto;
+  font-size: 9px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.badge-blue   { background: var(--blue-light); color: var(--deped-blue); }
+.badge-red    { background: var(--red-light);  color: var(--deped-red); }
+.badge-green  { background: var(--green-light);color: var(--green); }
+.badge-amber  { background: var(--amber-light);color: var(--amber); }
+.badge-purple { background: var(--purple-light);color: var(--purple); }
+.badge-gold   { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
+.badge-soon   { background: linear-gradient(135deg,#6b21a8,#7c3aed); color:#fff; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-footer span { color: var(--deped-blue); font-weight: 600; }
+
+/* ── MAIN CONTENT ─────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.view { flex: 1; overflow-y: auto; display: none; padding: 28px 32px; }
+.view.active { display: block; }
+.view-inner { max-width: 1200px; margin: 0 auto; }
+
+/* ── PAGE HEADERS ─────────────────────────────────────── */
+.pg-header { margin-bottom: 24px; }
+.pg-header h2 { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -.4px; }
+.pg-header p  { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+.breadcrumb span { color: var(--deped-blue); font-weight: 600; }
+
+/* ── CARDS ────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-hdr {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-hdr h3 { font-size: 13px; font-weight: 700; flex: 1; }
+.card-hdr p  { font-size: 11px; color: var(--text3); }
+.card-body { padding: 20px; }
+.card-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.ci-blue   { background: var(--blue-light); }
+.ci-red    { background: var(--red-light); }
+.ci-green  { background: var(--green-light); }
+.ci-amber  { background: var(--amber-light); }
+.ci-purple { background: var(--purple-light); }
+.ci-teal   { background: var(--teal-light); }
+.ci-gold   { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+
+/* ── STAT CARDS ───────────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow);
+  transition: transform .15s, box-shadow .15s;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; }
+.sc-blue::before  { background: var(--deped-blue); }
+.sc-red::before   { background: var(--deped-red); }
+.sc-green::before { background: var(--green); }
+.sc-amber::before { background: var(--amber); }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
+.stat-value { font-size: 28px; font-weight: 800; line-height: 1; font-family: var(--font-mono); }
+.stat-sub   { font-size: 11px; color: var(--text2); }
+.sv-blue  { color: var(--deped-blue); }
+.sv-red   { color: var(--deped-red); }
+.sv-green { color: var(--green); }
+.sv-amber { color: var(--amber); }
+
+/* ── MODULE GRID ──────────────────────────────────────── */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.module-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  transition: all .18s;
+  position: relative;
+  overflow: hidden;
+}
+.module-card:hover {
+  border-color: var(--deped-blue);
+  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(0,56,168,.07);
+  transform: translateY(-2px);
+}
+.module-card::after {
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--deped-blue), var(--blue-mid));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .2s ease;
+}
+.module-card:hover::after { transform: scaleX(1); }
+
+/* PRO locked module card */
+.module-card.pro-locked-card {
+  position: relative;
+}
+.module-card.pro-locked-card::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(135deg, rgba(251,191,36,.05), rgba(245,158,11,.08));
+  pointer-events:none;
+  z-index:0;
+}
+.module-card.pro-locked-card:hover {
+  border-color: #f59e0b;
+  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(245,158,11,.1);
+}
+.module-card.pro-locked-card::after {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+.pro-lock-overlay {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 9px; font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(245,158,11,.35);
+  z-index: 1;
+}
+
+/* COMING SOON module card */
+.module-card.coming-soon-card {
+  position: relative;
+  background: linear-gradient(135deg, #f8f4ff 0%, #fff 60%);
+}
+.module-card.coming-soon-card::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(135deg, rgba(107,33,168,.04), rgba(124,58,237,.06));
+  pointer-events:none;
+  z-index:0;
+}
+.module-card.coming-soon-card:hover {
+  border-color: #7c3aed;
+  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(107,33,168,.08);
+}
+.module-card.coming-soon-card::after {
+  background: linear-gradient(90deg, #7c3aed, #6b21a8);
+}
+.coming-soon-overlay {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #7c3aed, #6b21a8);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 9px; font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(107,33,168,.3);
+  z-index: 1;
+}
+
+.mc-head { display: flex; align-items: flex-start; gap: 12px; }
+.mc-icon {
+  width: 42px; height: 42px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.mc-info .mc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 3px; }
+.mc-info .mc-title { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.3; }
+.mc-desc { font-size: 11.5px; color: var(--text2); line-height: 1.6; }
+.mc-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}
+.mc-status { display: flex; align-items: center; gap: 5px; color: var(--text3); }
+.mc-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); }
+.mc-status .dot.active { background: var(--green); }
+.mc-status .dot.gold { background: #f59e0b; }
+.mc-status .dot.purple { background: #7c3aed; }
+.mc-arrow { color: var(--text3); font-size: 14px; }
+.module-card:hover .mc-arrow { color: var(--deped-blue); }
+.module-card.pro-locked-card:hover .mc-arrow { color: #d97706; }
+.module-card.coming-soon-card:hover .mc-arrow { color: #7c3aed; }
+
+/* ── FORMS ────────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.fld { display: flex; flex-direction: column; gap: 5px; }
+.fld label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+.fld label .req { color: var(--deped-red); }
+.fld input, .fld select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.fld input:focus, .fld select:focus {
+  border-color: var(--deped-blue);
+  box-shadow: 0 0 0 3px rgba(0,56,168,.1);
+  background: #fff;
+}
+.fld input::placeholder { color: var(--text3); font-size: 12px; }
+.fld.full { grid-column: 1 / -1; }
+.field-group-title {
+  font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--deped-blue);
+  grid-column: 1 / -1;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.field-group-title:first-child { border-top: none; padding-top: 0; }
+
+.form-actions {
+  display: flex; gap: 10px; align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px; font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer; border: none;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.btn-primary { background: var(--deped-blue); color: #fff; box-shadow: 0 2px 8px rgba(0,56,168,.3); }
+.btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,56,168,.35); }
+.btn-red { background: var(--deped-red); color: #fff; box-shadow: 0 2px 8px rgba(206,17,38,.25); }
+.btn-red:hover { background: #b00f20; }
+.btn-ghost { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { background: var(--surface3); color: var(--text); border-color: var(--border2); }
+.btn-green { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(13,110,61,.25); }
+.btn-green:hover { background: #0a5a32; }
+.btn-amber { background: #e67e00; color: #fff; }
+.btn-amber:hover { background: #c06a00; }
+.btn-purple { background: var(--purple); color: #fff; box-shadow: 0 2px 8px rgba(107,33,168,.25); }
+.btn-purple:hover { background: #581c87; }
+.btn-gold {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(245,158,11,.4);
+}
+.btn-gold:hover { background: linear-gradient(135deg,#d97706,#b45309); transform:translateY(-1px); box-shadow: 0 4px 14px rgba(245,158,11,.5); }
+.btn-sm { padding: 6px 12px; font-size: 11px; }
+
+/* ── TABLE ────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th {
+  background: var(--surface2);
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .8px;
+  color: var(--text3);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+td.name-cell { font-weight: 600; color: var(--text); }
+td.lrn-cell { font-family: var(--font-mono); font-size: 11px; }
+.tbl-empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 13px; }
+.tbl-empty .te-icon { font-size: 36px; margin-bottom: 10px; opacity: .5; }
+
+/* ── CHIPS / PILLS ────────────────────────────────────── */
+.chip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+.chip-m { background: #e3f0ff; color: #1a56b0; }
+.chip-f { background: #fce4ec; color: #b5174a; }
+.chip-yes { background: var(--green-light); color: var(--green); }
+.chip-no  { background: var(--surface3); color: var(--text3); }
+
+/* ── NOTICE BANNERS ───────────────────────────────────── */
+.notice {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  margin-bottom: 16px;
+  border: 1px solid;
+}
+.notice-blue  { background: var(--blue-light);  border-color: rgba(0,56,168,.2);  color: var(--blue-dark); }
+.notice-green { background: var(--green-light); border-color: rgba(13,110,61,.2); color: var(--green); }
+.notice-amber { background: var(--amber-light); border-color: rgba(192,95,0,.2);  color: var(--amber); }
+.notice-gold  { background: linear-gradient(135deg,#fffbeb,#fef3c7); border-color: rgba(245,158,11,.35); color: #92400e; }
+.notice-purple { background: linear-gradient(135deg,#f5f3ff,#ede9fe); border-color: rgba(107,33,168,.2); color: var(--purple); }
+.notice-icon  { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.notice-body .notice-title { font-weight: 700; margin-bottom: 2px; }
+
+/* ── QUICK LINKS ──────────────────────────────────────── */
+.quick-links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.ql-item {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer; text-decoration: none; color: inherit;
+  text-align: center;
+  transition: all .15s;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.ql-item:hover {
+  border-color: var(--deped-blue);
+  background: var(--blue-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.ql-item.ql-featured {
+  border-color: var(--green);
+  background: linear-gradient(135deg, var(--green-light), #f0fdf6);
+}
+.ql-item.ql-pro-locked {
+  border-color: rgba(245,158,11,.4);
+  background: linear-gradient(135deg, #fffbeb, #fef9ee);
+  opacity: .8;
+}
+.ql-item.ql-pro-locked:hover {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  opacity: 1;
+}
+.ql-lock-icon {
+  position: absolute; top: 6px; right: 7px;
+  font-size: 9px;
+  background: linear-gradient(135deg,#f59e0b,#d97706);
+  color:#fff;
+  padding: 1px 5px; border-radius: 99px;
+  font-weight: 800; letter-spacing:.3px;
+}
+.ql-icon { font-size: 22px; }
+.ql-label { font-size: 11px; font-weight: 700; color: var(--text2); }
+.ql-sub   { font-size: 9.5px; color: var(--text3); }
+
+/* ── TOOLS STRIP ──────────────────────────────────────── */
+.tools-strip { display: flex; gap: 10px; flex-wrap: wrap; }
+.tool-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer; text-decoration: none; color: inherit;
+  flex: 1; min-width: 180px;
+  transition: all .16s;
+  box-shadow: var(--shadow);
+}
+.tool-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.tool-btn.tb-purple:hover { border-color: var(--purple); background: var(--purple-light); }
+.tool-btn.tb-teal:hover { border-color: var(--teal); background: var(--teal-light); }
+.tool-btn.tb-amber:hover { border-color: var(--amber); background: var(--amber-light); }
+.tool-btn-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+.tbi-purple{background:var(--purple-light)}.tbi-teal{background:var(--teal-light)}.tbi-amber{background:var(--amber-light)}.tbi-green{background:var(--green-light)}
+.tool-btn-info .tool-btn-label{font-size:12px;font-weight:800;color:var(--text)}.tool-btn-info .tool-btn-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.tool-btn-arrow{margin-left:auto;font-size:16px;color:var(--text3)}
+
+/* ── TIMELINE ─────────────────────────────────────────── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-item { display: flex; gap: 14px; padding-bottom: 16px; position: relative; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-indicator { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 28px; }
+.tl-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; border: 2px solid; }
+.tl-dot-blue  { background: var(--blue-light);  border-color: var(--deped-blue); }
+.tl-dot-green { background: var(--green-light); border-color: var(--green); }
+.tl-dot-red   { background: var(--red-light);   border-color: var(--deped-red); }
+.tl-dot-amber { background: var(--amber-light); border-color: var(--amber); }
+.tl-line { flex: 1; width: 2px; background: var(--border); margin: 3px 0; }
+.tl-content { flex: 1; padding-top: 3px; }
+.tl-title { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.tl-meta  { font-size: 11px; color: var(--text3); }
+
+/* ── SETTINGS STATUS ──────────────────────────────────── */
+.save-indicator { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 5px; opacity: 0; transition: opacity .3s; }
+.save-indicator.visible { opacity: 1; }
+
+/* ── TOAST ────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 22px; right: 22px;
+  background: var(--text); color: #fff;
+  border-radius: 10px; padding: 12px 18px;
+  font-size: 12.5px; font-weight: 600;
+  z-index: 9999;
+  display: flex; align-items: center; gap: 9px;
+  transform: translateY(80px); opacity: 0;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  max-width: 340px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.toast-success { border-left: 3px solid #4ade80; }
+.toast.toast-error   { border-left: 3px solid var(--deped-red); }
+.toast.toast-info    { border-left: 3px solid var(--deped-blue); }
+.toast.toast-gold    { border-left: 3px solid #f59e0b; }
+
+/* ── UPLOAD ZONE ──────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed var(--border2); border-radius: var(--radius);
+  padding: 32px 20px; text-align: center; cursor: pointer;
+  transition: all .18s; background: var(--surface2);
+}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--deped-blue);background:var(--blue-light)}
+.uz-icon{font-size:32px;margin-bottom:10px;opacity:.6}
+.uz-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.uz-sub{font-size:11px;color:var(--text3)}
+
+/* ── SECTION SPACING ──────────────────────────────────── */
+.section { margin-bottom: 24px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.gap-sm { gap: 10px; }
+.sec-header { font-size: 13px; font-weight: 800; color: var(--deped-blue); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.sec-header-pill { padding: 5px 12px; border-radius: 20px; }
+
+/* ── AI TOOLS COMING SOON BANNER ─────────────────────── */
+.ai-section-banner {
+  background: linear-gradient(135deg, #1e1033 0%, #2d1560 40%, #1e1033 100%);
+  border-radius: var(--radius);
+  padding: 22px 28px;
+  display: flex; align-items: center; gap: 20px;
+  position: relative; overflow: hidden;
+  margin-bottom: 20px;
+}
+.ai-section-banner::before {
+  content:'';
+  position:absolute;inset:0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(124,58,237,.35) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 50%, rgba(59,130,246,.2) 0%, transparent 55%);
+  pointer-events:none;
+}
+.ai-banner-icon { font-size: 40px; position: relative; z-index:1; }
+.ai-banner-text { position: relative; z-index:1; }
+.ai-banner-text h3 { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 5px; letter-spacing: -.3px; }
+.ai-banner-text p { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.5; }
+.ai-banner-badge {
+  position: relative; z-index: 1;
+  margin-left: auto;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  flex-shrink: 0;
+}
+.ai-banner-badge .pill {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: .5px;
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 4px 16px rgba(124,58,237,.5);
+  white-space: nowrap;
+}
+.ai-banner-badge .sub { font-size: 10px; color: rgba(255,255,255,.5); }
+
+/* ════════════════════════════════════════════════════════
+   PRO PAYWALL MODAL
+   ════════════════════════════════════════════════════════ */
+.paywall-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(12,16,23,.75);
+  backdrop-filter: blur(6px);
+  z-index: 8000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease;
+}
+.paywall-backdrop.open { opacity: 1; pointer-events: all; }
+
+.paywall-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 92%; max-width: 860px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,.35), 0 0 0 1px rgba(245,158,11,.2);
+  transform: translateY(24px) scale(.97);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+.paywall-backdrop.open .paywall-modal { transform: translateY(0) scale(1); }
+
+.paywall-close {
+  position: absolute; top: 16px; right: 18px;
+  background: var(--surface3); border: none; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 50%;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  z-index: 10; transition: background .15s;
+  color: var(--text2);
+}
+.paywall-close:hover { background: var(--border2); }
+
+.pw-hero {
+  background: linear-gradient(135deg, #0c1017 0%, #1a3a7c 60%, #0c1017 100%);
+  padding: 36px 40px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.pw-hero::before {
+  content:'';
+  position:absolute;inset:0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,.25) 0%, transparent 65%);
+  pointer-events:none;
+}
+.pw-hero-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 6px 18px;
+  border-radius: 99px;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 20px rgba(245,158,11,.5);
+}
+.pw-hero h2 {
+  font-size: 26px; font-weight: 800; color: #fff;
+  letter-spacing: -.5px; line-height: 1.2; margin-bottom: 8px;
+}
+.pw-hero p { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.6; max-width: 480px; margin: 0 auto; }
+
+.pw-stars {
+  display: flex; justify-content: center; gap: 3px;
+  margin-bottom: 10px;
+}
+.pw-stars span { color: #f59e0b; font-size: 14px; }
+
+.pw-pricing {
+  padding: 32px 40px;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 1fr;
+  gap: 16px;
+  background: linear-gradient(180deg, #fafbff 0%, #fff 100%);
+}
+
+.pw-plan {
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  position: relative;
+  transition: all .2s;
+  cursor: pointer;
+}
+.pw-plan:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.1); }
+
+.pw-plan.recommended {
+  border-color: #f59e0b;
+  background: linear-gradient(160deg, #fffbeb 0%, #fff 60%);
+  box-shadow: 0 8px 32px rgba(245,158,11,.2), 0 0 0 3px rgba(245,158,11,.1);
+}
+.pw-plan.recommended:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(245,158,11,.25); }
+
+.pw-best-tag {
+  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg,#f59e0b,#d97706);
+  color: #fff; font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 3px 14px; border-radius: 99px;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(245,158,11,.4);
+}
+
+.pw-plan-icon { font-size: 28px; margin-bottom: 2px; }
+.pw-plan-name { font-size: 13px; font-weight: 800; color: var(--text); }
+.pw-plan-price {
+  display: flex; align-items: baseline; gap: 4px;
+  margin: -4px 0;
+}
+.pw-price-amount {
+  font-size: 32px; font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+.pw-price-amount.gold { color: #d97706; }
+.pw-price-period { font-size: 11px; color: var(--text3); }
+.pw-plan-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+
+.pw-features { display: flex; flex-direction: column; gap: 7px; }
+.pw-feature {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 11.5px; color: var(--text2);
+}
+.pw-feature .pf-icon { font-size: 13px; flex-shrink: 0; margin-top: 0px; }
+.pw-feature.locked { color: var(--text3); opacity: .55; }
+
+.pw-plan-cta {
+  margin-top: auto;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 12.5px; font-weight: 800;
+  font-family: var(--font);
+  border: none; cursor: pointer;
+  width: 100%;
+  transition: all .16s;
+  letter-spacing: .2px;
+}
+.cta-free {
+  background: var(--surface3);
+  color: var(--text2);
+  border: 1.5px solid var(--border);
+}
+.cta-free:hover { background: var(--border); }
+.cta-pro {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(245,158,11,.45);
+}
+.cta-pro:hover { box-shadow: 0 6px 20px rgba(245,158,11,.5); transform: translateY(-1px); }
+.cta-school {
+  background: var(--deped-blue);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,56,168,.3);
+}
+.cta-school:hover { background: var(--blue-dark); }
+
+.pw-gcash {
+  padding: 24px 40px;
+  background: #f7f9ff;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.pw-gcash-inner {
+  display: inline-flex; align-items: center; gap: 16px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 24px;
+  box-shadow: var(--shadow);
+  max-width: 480px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.gcash-logo {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.gcash-info .gcash-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; }
+.gcash-info .gcash-number { font-size: 18px; font-weight: 800; color: var(--text); font-family: var(--font-mono); letter-spacing: 1px; }
+.gcash-info .gcash-name { font-size: 11px; color: var(--text2); }
+.gcash-qr {
+  width: 64px; height: 64px;
+  border-radius: 8px;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  border: 1px solid var(--border);
+}
+.pw-gcash-note { font-size: 11px; color: var(--text3); margin-top: 10px; line-height: 1.5; }
+
+.pw-activate {
+  padding: 24px 40px;
+  border-top: 1px solid var(--border);
+}
+.pw-activate-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.activate-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.activate-input {
+  flex: 1; min-width: 200px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 13px; font-family: var(--font-mono); font-weight: 700;
+  color: var(--text); outline: none;
+  transition: border-color .15s;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.activate-input:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+.activate-input::placeholder { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--text3); font-size: 12px; }
+.activate-hint { font-size: 10.5px; color: var(--text3); margin-top: 7px; line-height: 1.5; }
+.activate-hint a { color: #d97706; font-weight: 700; text-decoration: none; }
+
+/* ── DASHBOARD PRO BANNER ─────────────────────────────── */
+.pro-upgrade-banner {
+  background: linear-gradient(135deg, #0c1017 0%, #1a3a7c 50%, #0c1017 100%);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  display: flex; align-items: center; gap: 20px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  text-decoration: none;
+}
+.pro-upgrade-banner::before {
+  content:'';
+  position:absolute;inset:0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(245,158,11,.2) 0%, transparent 60%);
+  pointer-events:none;
+}
+.pro-upgrade-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.2); }
+.pub-icon { font-size: 36px; flex-shrink: 0; position: relative; z-index: 1; }
+.pub-text { position: relative; z-index: 1; }
+.pub-text h3 { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.pub-text p { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.5; }
+.pub-badge {
+  position: relative; z-index: 1;
+  margin-left: auto;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 12px; font-weight: 800;
+  box-shadow: 0 4px 16px rgba(245,158,11,.5);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform .15s;
+}
+.pro-upgrade-banner:hover .pub-badge { transform: scale(1.03); }
+.pub-features {
+  display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap;
+}
+.pub-feat {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: rgba(255,255,255,.8);
+}
+
+.pro-active-banner {
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border-radius: var(--radius);
+  padding: 16px 22px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 4px 20px rgba(6,78,59,.25);
+}
+.pab-text h3 { font-size: 14px; font-weight: 800; color: #fff; }
+.pab-text p  { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 2px; }
+.pab-key { font-family: var(--font-mono); font-size: 10px; background:rgba(255,255,255,.15); color:rgba(255,255,255,.85); padding:3px 9px; border-radius:6px; margin-left:8px; }
+</style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══════════════════════════════════════════ -->
+<div class="topbar">
+  <a class="tb-brand" href="#" onclick="showView('dashboard');return false;">
+    <div class="tb-logo">🏫</div>
+    <div class="tb-brand-text">
+      <h1>DepEd Teacher Hub</h1>
+      <p>Central Dashboard &amp; Module Manager</p>
+    </div>
+  </a>
+  <div class="tb-divider"></div>
+  <div class="tb-pills">
+    <button class="tb-pill active" onclick="showView('dashboard');setActivePill(this)">🏠 Dashboard</button>
+    <button class="tb-pill" onclick="showView('settings');setActivePill(this)">⚙️ School Profile</button>
+    <button class="tb-pill" onclick="showView('students');setActivePill(this)">👥 Master List</button>
+    <button class="tb-pill" onclick="showView('modules');setActivePill(this)">📋 All Modules</button>
+    <button class="tb-pill" onclick="showView('pricing');setActivePill(this)">⭐ Pro Plans</button>
+  </div>
+  <div class="tb-right">
+    <div class="sy-badge" id="topSyBadge">SY ——</div>
+    <button class="pro-topbar-badge free-mode" id="proTopBtn" onclick="openPaywall()">⭐ Upgrade to Pro</button>
+    <button class="save-btn" onclick="saveProfile()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Profile
+    </button>
+  </div>
+</div>
+
+<!-- ══ APP BODY ══════════════════════════════════════════ -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-school">
+      <div class="school-name-sb" id="sbSchoolName">School Name Not Set</div>
+      <div class="school-meta-sb" id="sbSchoolMeta">Please configure School Profile →</div>
+      <div class="school-grade-sb" id="sbGradeSec">—</div>
+    </div>
+
+    <a href="#" class="sidebar-pro-cta" id="sidebarProCta" onclick="openPaywall();return false;">
+      <div class="spc-top">
+        <span class="spc-icon">⭐</span>
+        <span class="spc-label" id="spcLabel">Upgrade to Pro — ₱399/yr</span>
+      </div>
+      <div class="spc-desc" id="spcDesc">Unlock SF1, SF2, SF8, CRLA, RMA, Item Analysis &amp; more.</div>
+    </a>
+
+    <div style="padding:8px 10px;overflow-y:auto;flex:1">
+
+      <div class="sb-section-label">📋 Enrollment &amp; Records</div>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('SF1 – Enrollment Register');return false;">
+        <div class="sb-icon">📝</div> SF1 – Enrollment Register <span class="sb-badge badge-gold">PRO</span>
+      </a>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('SF2 – Attendance Record');return false;">
+        <div class="sb-icon">📅</div> SF2 – Attendance Record <span class="sb-badge badge-gold">PRO</span>
+      </a>
+      <a href="sf10.html" class="sb-nav-item" target="_blank">
+        <div class="sb-icon">🗂️</div> SF10 – Permanent Record <span class="sb-badge badge-green">Open</span>
+      </a>
+
+      <div class="sb-section-label">📊 Assessments</div>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('CRLA – Literacy Assessment');return false;">
+        <div class="sb-icon">📖</div> CRLA – Literacy Assessment <span class="sb-badge badge-gold">PRO</span>
+      </a>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('RMA – Math Assessment');return false;">
+        <div class="sb-icon">🔢</div> RMA – Math Assessment <span class="sb-badge badge-gold">PRO</span>
+      </a>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('Item Analysis');return false;">
+        <div class="sb-icon">🧮</div> Item Analysis <span class="sb-badge badge-gold">PRO</span>
+      </a>
+
+      <div class="sb-section-label">🏁 End of Year</div>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('SF5 – Promotion Report');return false;">
+        <div class="sb-icon">🎓</div> SF5 – Promotion Report <span class="sb-badge badge-gold">PRO</span>
+      </a>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('SF6 – Summary Report');return false;">
+        <div class="sb-icon">📊</div> SF6 – Summary Report <span class="sb-badge badge-gold">PRO</span>
+      </a>
+
+      <div class="sb-section-label">❤️ Health</div>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('SF8 – BMI/Nutritional Status');return false;">
+        <div class="sb-icon">⚖️</div> SF8 – Nutritional Status <span class="sb-badge badge-gold">PRO</span>
+      </a>
+
+      <div class="sb-section-label">🌱 Homeroom &amp; Guidance</div>
+      <a href="hg9.html" class="sb-nav-item" target="_blank">
+        <div class="sb-icon">🌿</div> HG9 – Homeroom &amp; Guidance 9 <span class="sb-badge badge-green">Open</span>
+      </a>
+      <a href="hg10.html" class="sb-nav-item" target="_blank">
+        <div class="sb-icon">🌾</div> HG10 – Homeroom &amp; Guidance 10 <span class="sb-badge badge-green">Open</span>
+      </a>
+
+      <div class="sb-section-label">🤖 AI Learning Tools</div>
+      <a href="#" class="sb-nav-item" onclick="showComingSoon('DLL Generator');return false;">
+        <div class="sb-icon">📋</div> DLL Generator <span class="sb-badge badge-soon">Soon</span>
+      </a>
+      <a href="#" class="sb-nav-item" onclick="showComingSoon('Lesson Plan AI');return false;">
+        <div class="sb-icon">📝</div> Lesson Plan AI <span class="sb-badge badge-soon">Soon</span>
+      </a>
+      <a href="#" class="sb-nav-item" onclick="showComingSoon('Gemini PPT');return false;">
+        <div class="sb-icon">✨</div> Gemini PPT <span class="sb-badge badge-soon">Soon</span>
+      </a>
+      <a href="#" class="sb-nav-item" onclick="showComingSoon('Exam Generator');return false;">
+        <div class="sb-icon">📄</div> Exam Generator <span class="sb-badge badge-soon">Soon</span>
+      </a>
+
+      <div class="sb-section-label">🛠️ Teacher Tools</div>
+      <a href="tarpapel.html" class="sb-nav-item" target="_blank">
+        <div class="sb-icon">🖨️</div> Tarpapel Maker <span class="sb-badge badge-purple">Tool</span>
+      </a>
+      <a href="certificates.html" class="sb-nav-item" target="_blank">
+        <div class="sb-icon">🎖️</div> Certificate Maker <span class="sb-badge badge-purple">Bulk</span>
+      </a>
+
+      <div class="sb-section-label">💼 Professional</div>
+      <a href="#" class="sb-nav-item pro-locked" onclick="requirePro('IPCRF / RPMS Tracker');return false;">
+        <div class="sb-icon">🏆</div> IPCRF / RPMS Tracker <span class="sb-badge badge-gold">PRO</span>
+      </a>
+
+    </div>
+
+    <div class="sidebar-footer">
+      🇵🇭 <span>DepEd Philippines</span> &nbsp;· Teacher Hub v1.0
+    </div>
+  </div>
+
+  <!-- ══ VIEWS ══════════════════════════════════════════ -->
+
+  <!-- ▶ DASHBOARD ──────────────────────────────────────── -->
+  <div class="view active" id="view-dashboard">
+    <div class="view-inner">
+
+      <div class="pg-header">
+        <div class="breadcrumb">🏠 <span>Dashboard</span></div>
+        <h2 id="dashGreeting">Good day, Teacher! 👋</h2>
+        <p>Your central command for all DepEd forms, records, and assessments.</p>
+      </div>
+
+      <div id="proUpgradeBanner" class="section">
+        <a href="#" class="pro-upgrade-banner" onclick="openPaywall();return false;">
+          <div class="pub-icon">🌟</div>
+          <div class="pub-text">
+            <h3>Unlock the full Teacher Hub — ₱399/year</h3>
+            <p>Everything you need for the entire school year, in one place. Less than ₱34/month.</p>
+            <div class="pub-features">
+              <div class="pub-feat">✅ SF1 &amp; SF2</div>
+              <div class="pub-feat">✅ SF5, SF6, SF8</div>
+              <div class="pub-feat">✅ CRLA &amp; RMA</div>
+              <div class="pub-feat">✅ Item Analysis</div>
+              <div class="pub-feat">✅ IPCRF / RPMS</div>
+              <div class="pub-feat">✅ PDF Export</div>
+            </div>
+          </div>
+          <div class="pub-badge">⭐ Get Pro →</div>
+        </a>
+      </div>
+
+      <div id="proActiveBanner" class="section" style="display:none">
+        <div class="pro-active-banner">
+          <span style="font-size:28px">🌟</span>
+          <div class="pab-text">
+            <h3>You're on Teacher Hub Pro <span class="pab-key" id="proKeyDisplay">—</span></h3>
+            <p>All modules are unlocked. Thank you for supporting the project!</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1)" onclick="deactivatePro()">Remove Key</button>
+        </div>
+      </div>
+
+      <div class="notice notice-blue section">
+        <div class="notice-icon">ℹ️</div>
+        <div class="notice-body">
+          <div class="notice-title">Welcome to DepEd Teacher Hub</div>
+          Start by configuring your <strong>School Profile</strong> — your school name, division, teacher info, and school year will auto-fill into every module so you never have to retype them.
+        </div>
+      </div>
+
+      <div class="stat-grid section">
+        <div class="stat-card sc-blue">
+          <div class="stat-label">Total Learners</div>
+          <div class="stat-value sv-blue" id="dash-total">0</div>
+          <div class="stat-sub">in Master Student List</div>
+        </div>
+        <div class="stat-card sc-green">
+          <div class="stat-label">Male Learners</div>
+          <div class="stat-value sv-green" id="dash-male">0</div>
+          <div class="stat-sub">enrolled this SY</div>
+        </div>
+        <div class="stat-card sc-red">
+          <div class="stat-label">Female Learners</div>
+          <div class="stat-value sv-red" id="dash-female">0</div>
+          <div class="stat-sub">enrolled this SY</div>
+        </div>
+        <div class="stat-card sc-amber">
+          <div class="stat-label">Modules Active</div>
+          <div class="stat-value sv-amber" id="dash-modules">5</div>
+          <div class="stat-sub" id="dash-modules-sub">free modules ready</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-icon ci-purple">🛠️</div>
+            <div><h3>Teacher Tools</h3><p>Your custom-built tools for print and classroom needs</p></div>
+          </div>
+          <div class="card-body">
+            <div class="tools-strip">
+              <a href="tarpapel.html" target="_blank" class="tool-btn tb-purple">
+                <div class="tool-btn-icon tbi-purple">🖨️</div>
+                <div class="tool-btn-info"><div class="tool-btn-label">Tarpapel Maker</div><div class="tool-btn-sub">Design &amp; print classroom tarpaulins</div></div>
+                <div class="tool-btn-arrow">→</div>
+              </a>
+              <a href="certificates.html" target="_blank" class="tool-btn tb-teal">
+                <div class="tool-btn-icon tbi-teal">🎖️</div>
+                <div class="tool-btn-info"><div class="tool-btn-label">Bulk Certificate Maker</div><div class="tool-btn-sub">Generate certificates for the whole class</div></div>
+                <div class="tool-btn-arrow">→</div>
+              </a>
+              <a href="hg9.html" target="_blank" class="tool-btn tb-amber">
+                <div class="tool-btn-icon" style="background:var(--green-light)">🌿</div>
+                <div class="tool-btn-info"><div class="tool-btn-label">HG9 – Homeroom &amp; Guidance 9</div><div class="tool-btn-sub">Grade 9 Homeroom &amp; Guidance module</div></div>
+                <div class="tool-btn-arrow">→</div>
+              </a>
+              <a href="hg10.html" target="_blank" class="tool-btn">
+                <div class="tool-btn-icon" style="background:#d1fae5">🌾</div>
+                <div class="tool-btn-info"><div class="tool-btn-label">HG10 – Homeroom &amp; Guidance 10</div><div class="tool-btn-sub">Grade 10 Homeroom &amp; Guidance module</div></div>
+                <div class="tool-btn-arrow">→</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col section">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-icon ci-blue">⚡</div>
+            <div><h3>Quick Access</h3><p>Jump directly to your most-used modules</p></div>
+          </div>
+          <div class="card-body">
+            <div class="quick-links-grid">
+              <a href="sf10.html" target="_blank" class="ql-item ql-featured">
+                <div class="ql-icon">🗂️</div>
+                <div class="ql-label">SF10</div>
+                <div class="ql-sub">Permanent Record</div>
+              </a>
+              <a href="#" class="ql-item ql-pro-locked" onclick="requirePro('SF1');return false;" id="ql-sf1">
+                <div class="ql-lock-icon">PRO</div>
+                <div class="ql-icon">📝</div>
+                <div class="ql-label">SF1</div>
+                <div class="ql-sub">Enroll. Register</div>
+              </a>
+              <a href="#" class="ql-item ql-pro-locked" onclick="requirePro('SF8');return false;" id="ql-sf8">
+                <div class="ql-lock-icon">PRO</div>
+                <div class="ql-icon">⚖️</div>
+                <div class="ql-label">SF8</div>
+                <div class="ql-sub">BMI / Nutrition</div>
+              </a>
+              <a href="#" class="ql-item ql-pro-locked" onclick="requirePro('CRLA');return false;" id="ql-crla">
+                <div class="ql-lock-icon">PRO</div>
+                <div class="ql-icon">📖</div>
+                <div class="ql-label">CRLA</div>
+                <div class="ql-sub">Literacy Test</div>
+              </a>
+              <a href="hg9.html" target="_blank" class="ql-item"><div class="ql-icon">🌿</div><div class="ql-label">HG9</div><div class="ql-sub">Homeroom &amp; Guidance 9</div></a>
+              <a href="hg10.html" target="_blank" class="ql-item"><div class="ql-icon">🌾</div><div class="ql-label">HG10</div><div class="ql-sub">Homeroom &amp; Guidance 10</div></a>
+              <a href="tarpapel.html" target="_blank" class="ql-item"><div class="ql-icon">🖨️</div><div class="ql-label">Tarpapel</div><div class="ql-sub">Print Maker</div></a>
+              <a href="certificates.html" target="_blank" class="ql-item"><div class="ql-icon">🎖️</div><div class="ql-label">Certificates</div><div class="ql-sub">Bulk Generator</div></a>
+              <a href="#" class="ql-item ql-pro-locked" onclick="requirePro('RMA');return false;" id="ql-rma">
+                <div class="ql-lock-icon">PRO</div>
+                <div class="ql-icon">🔢</div><div class="ql-label">RMA</div><div class="ql-sub">Math Assessment</div>
+              </a>
+              <a href="#" class="ql-item ql-pro-locked" onclick="requirePro('SF5');return false;" id="ql-sf5">
+                <div class="ql-lock-icon">PRO</div>
+                <div class="ql-icon">🎓</div><div class="ql-label">SF5</div><div class="ql-sub">Promotion</div>
+              </a>
+              <a href="#" class="ql-item" onclick="showView('students');return false;"><div class="ql-icon">👥</div><div class="ql-label">Master List</div><div class="ql-sub">Upload Students</div></a>
+              <a href="#" class="ql-item" onclick="showView('settings');return false;"><div class="ql-icon">⚙️</div><div class="ql-label">Settings</div><div class="ql-sub">School Profile</div></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-icon ci-amber">📅</div>
+            <div><h3>School Year Milestones</h3><p>Key form submission periods</p></div>
+          </div>
+          <div class="card-body">
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-indicator"><div class="tl-dot tl-dot-blue">📝</div><div class="tl-line"></div></div>
+                <div class="tl-content"><div class="tl-title">Enrollment Period — SF1 &amp; SF2</div><div class="tl-meta">Accomplished at the start of each school year</div></div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-indicator"><div class="tl-dot tl-dot-green">❤️</div><div class="tl-line"></div></div>
+                <div class="tl-content"><div class="tl-title">SF8 — Nutritional Status &amp; NS Baseline</div><div class="tl-meta">First 2 weeks of class + mid-year update</div></div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-indicator"><div class="tl-dot tl-dot-blue">📊</div><div class="tl-line"></div></div>
+                <div class="tl-content"><div class="tl-title">CRLA / RMA &amp; Item Analysis — Q1 &amp; Q3</div><div class="tl-meta">Conduct at the beginning of Q1 and Q3</div></div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-indicator"><div class="tl-dot tl-dot-red">🏁</div><div class="tl-line"></div></div>
+                <div class="tl-content"><div class="tl-title">SF5 &amp; SF6 — End-of-Year Reports</div><div class="tl-meta">Submitted at the end of each school year</div></div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-indicator"><div class="tl-dot tl-dot-amber">🗂️</div></div>
+                <div class="tl-content"><div class="tl-title">SF10 — Permanent Record (on-going)</div><div class="tl-meta">Updated quarterly throughout the school year</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Completeness -->
+      <div class="card section">
+        <div class="card-hdr">
+          <div class="card-icon ci-green">✅</div>
+          <div><h3>Profile Completeness</h3><p>Make sure all fields are filled in for seamless auto-fill across modules</p></div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="showView('settings')">⚙️ Edit Profile</button>
+        </div>
+        <div class="card-body">
+          <div class="three-col" id="profileChecklist" style="gap:10px"></div>
+        </div>
+      </div>
+
+      <!-- Quick Notes -->
+      <div class="card section">
+        <div class="card-hdr">
+          <div class="card-icon ci-amber">📌</div>
+          <div><h3>Quick Notes / Reminders</h3><p>Jot down reminders — saved automatically in your browser</p></div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearNotes()">🗑️ Clear</button>
+        </div>
+        <div class="card-body">
+          <textarea id="quickNotes"
+            placeholder="e.g. Remind parents about field trip on Friday… Submit SF8 to principal by Wednesday…"
+            oninput="saveNotes()"
+            style="width:100%;min-height:90px;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:12.5px;color:var(--text);background:var(--surface2);resize:vertical;outline:none;line-height:1.6;"
+            onfocus="this.style.borderColor='var(--deped-blue)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">💾 Notes are auto-saved to this browser.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ▶ SETTINGS ─────────────────────────────────────── -->
+  <div class="view" id="view-settings">
+    <div class="view-inner">
+      <div class="pg-header">
+        <div class="breadcrumb">🏠 Dashboard › <span>School Profile</span></div>
+        <h2>⚙️ School Profile &amp; Global Settings</h2>
+        <p>Data entered here will be shared across all DepEd modules.</p>
+      </div>
+
+      <div class="card section">
+        <div class="card-hdr">
+          <div class="card-icon ci-blue">🏫</div>
+          <div><h3>School Information</h3><p>DepEd identification and location details</p></div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field-group-title">🏫 School Identity</div>
+            <div class="fld full"><label>School Name <span class="req">*</span></label><input type="text" id="p_school" placeholder="e.g. SAN FRANCISCO ELEMENTARY SCHOOL" oninput="onProfileChange()"></div>
+            <div class="fld"><label>School ID <span class="req">*</span></label><input type="text" id="p_schoolid" placeholder="e.g. 112186" oninput="onProfileChange()"></div>
+            <div class="fld"><label>School Email</label><input type="email" id="p_email" placeholder="e.g. school@deped.gov.ph" oninput="onProfileChange()"></div>
+            <div class="fld full"><label>Complete Address</label><input type="text" id="p_addr" placeholder="e.g. Brgy. San Francisco, Labo, Camarines Norte" oninput="onProfileChange()"></div>
+            <div class="field-group-title">🗺️ DepEd Jurisdiction</div>
+            <div class="fld"><label>Region <span class="req">*</span></label><input type="text" id="p_region" placeholder="e.g. REGION V — BICOL" oninput="onProfileChange()"></div>
+            <div class="fld"><label>Division <span class="req">*</span></label><input type="text" id="p_division" placeholder="e.g. CAMARINES NORTE" oninput="onProfileChange()"></div>
+            <div class="fld"><label>District <span class="req">*</span></label><input type="text" id="p_district" placeholder="e.g. LABO EAST" oninput="onProfileChange()"></div>
+            <div class="fld"><label>School Year <span class="req">*</span></label><input type="text" id="p_sy" placeholder="e.g. 2025-2026" oninput="onProfileChange()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card section">
+        <div class="card-hdr">
+          <div class="card-icon ci-green">👩‍🏫</div>
+          <div><h3>Class Information</h3><p>Teacher and class assignment details</p></div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="fld full"><label>Teacher / Adviser Full Name <span class="req">*</span></label><input type="text" id="p_teacher" placeholder="e.g. MARIA C. SANTOS" oninput="onProfileChange()"></div>
+            <div class="fld"><label>Employee ID</label><input type="text" id="p_empid" placeholder="e.g. 01234567" oninput="onProfileChange()"></div>
+            <div class="fld"><label>Designation</label><input type="text" id="p_designation" placeholder="e.g. Teacher I" oninput="onProfileChange()"></div>
+            <div class="fld"><label>Grade Level <span class="req">*</span></label><input type="text" id="p_grade" placeholder="e.g. 1" oninput="onProfileChange()"></div>
+            <div class="fld"><label>Section <span class="req">*</span></label><input type="text" id="p_section" placeholder="e.g. MASUNURIN" oninput="onProfileChange()"></div>
+            <div class="fld"><label>School Principal</label><input type="text" id="p_principal" placeholder="e.g. JOSE B. REYES, Ed.D." oninput="onProfileChange()"></div>
+            <div class="fld"><label>Quarter / Grading Period</label>
+              <select id="p_quarter" onchange="onProfileChange()">
+                <option value="">Select quarter…</option>
+                <option value="Q1">1st Quarter</option>
+                <option value="Q2">2nd Quarter</option>
+                <option value="Q3">3rd Quarter</option>
+                <option value="Q4">4th Quarter</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveProfile()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Save School Profile
+            </button>
+            <button class="btn btn-ghost" onclick="clearProfile()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+              Clear All
+            </button>
+            <div class="save-indicator" id="saveIndicator">✅ Saved to browser storage</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card section">
+        <div class="card-hdr">
+          <div class="card-icon ci-amber">💾</div>
+          <div><h3>Data Management</h3><p>Export or import your entire Hub configuration</p></div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-green" onclick="exportAllData()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Full Backup (JSON)
+            </button>
+            <button class="btn btn-ghost" onclick="document.getElementById('importFileInput').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Import Backup
+            </button>
+            <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importAllData(this)">
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:10px">💡 Your data is stored locally in this browser. Export a backup to restore on another device.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▶ MASTER STUDENT LIST ─────────────────────────────── -->
+  <div class="view" id="view-students">
+    <div class="view-inner">
+      <div class="pg-header">
+        <div class="breadcrumb">🏠 Dashboard › <span>Master Student List</span></div>
+        <h2>👥 Master Student Database</h2>
+        <p>Upload your class list once — every module will pull from this shared database.</p>
+      </div>
+
+      <div class="two-col section">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-icon ci-blue">📤</div>
+            <div><h3>Upload Master CSV</h3></div>
+          </div>
+          <div class="card-body">
+            <div class="notice notice-amber" style="margin-bottom:14px">
+              <div class="notice-icon">💡</div>
+              <div class="notice-body"><div class="notice-title">First time?</div>Download the CSV template, fill in your students' data, then upload it here.</div>
+            </div>
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('masterCSVInput').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+              <div class="uz-icon">📂</div>
+              <div class="uz-title">Click to upload, or drag &amp; drop your CSV</div>
+              <div class="uz-sub">Accepted: .csv files only</div>
+            </div>
+            <input type="file" id="masterCSVInput" accept=".csv" style="display:none" onchange="loadMasterCSV(this)">
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="document.getElementById('masterCSVInput').click()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choose CSV File
+              </button>
+              <button class="btn btn-ghost" onclick="downloadMasterTemplate()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Template
+              </button>
+              <button class="btn btn-red btn-sm" onclick="clearStudents()" style="margin-left:auto">🗑️ Clear List</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><div class="card-icon ci-green">📊</div><div><h3>Class Summary</h3></div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+              <div style="background:var(--blue-light);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--deped-blue);font-family:var(--font-mono)" id="sumTotal">0</div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">Total Learners</div></div>
+              <div style="background:var(--green-light);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--green);font-family:var(--font-mono)" id="sumMale">0</div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">Male</div></div>
+              <div style="background:var(--red-light);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--deped-red);font-family:var(--font-mono)" id="sumFemale">0</div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">Female</div></div>
+              <div style="background:var(--amber-light);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--amber);font-family:var(--font-mono)" id="sumAge">—</div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">Avg Age</div></div>
+            </div>
+            <div id="csvFileName" style="font-size:11px;color:var(--text3);text-align:center">No file uploaded yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card section">
+        <div class="card-hdr">
+          <div class="card-icon ci-blue">👥</div>
+          <div><h3>Student Roster</h3><p id="rosterSubtitle">Upload a CSV to view your students</p></div>
+          <div style="margin-left:auto">
+            <input type="text" id="searchStudents" placeholder="🔍 Search name or LRN…"
+              style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);font-family:var(--font);font-size:12px;outline:none;width:200px"
+              oninput="renderStudentTable()" onfocus="this.style.borderColor='var(--deped-blue)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:38px">#</th><th>Full Name</th><th>LRN</th><th>Sex</th><th>Birthdate</th><th>Mother Tongue</th><th>Address</th></tr></thead>
+              <tbody id="studentTableBody">
+                <tr><td colspan="7" class="tbl-empty"><div class="te-icon">👥</div>Upload a CSV file to populate the student roster.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▶ ALL MODULES ─────────────────────────────────────── -->
+  <div class="view" id="view-modules">
+    <div class="view-inner">
+      <div class="pg-header">
+        <div class="breadcrumb">🏠 Dashboard › <span>All Modules</span></div>
+        <h2>📋 All DepEd Modules &amp; Tools</h2>
+        <p>All forms, assessments, and tools available in the Teacher Hub.</p>
+      </div>
+
+      <!-- ── ENROLLMENT ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--blue-light)">📋 Enrollment &amp; Records</span></div>
+        <div class="module-grid">
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('SF1');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--blue-light)">📝</div><div class="mc-info"><div class="mc-label">SF1 — School Form 1</div><div class="mc-title">Enrollment Register</div></div></div>
+            <div class="mc-desc">Official record of all learners enrolled in a class. Includes LRN, personal data, and parent information.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('SF2');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--blue-light)">📅</div><div class="mc-info"><div class="mc-label">SF2 — School Form 2</div><div class="mc-title">Daily Attendance Record</div></div></div>
+            <div class="mc-desc">Daily attendance monitoring for all learners. Computes absences, tardiness, and generates monthly summary.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="sf10.html" target="_blank" class="module-card">
+            <div class="mc-head"><div class="mc-icon" style="background:var(--green-light)">🗂️</div><div class="mc-info"><div class="mc-label">SF10-ES</div><div class="mc-title">Learner Permanent Record</div></div></div>
+            <div class="mc-desc">Complete scholastic record of a learner. Formerly Form 137. Includes eligibility and grade tables.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot active"></div> Free — Opens in tab</div><div class="mc-arrow" style="color:var(--green)">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── ASSESSMENTS ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--blue-light)">📊 Assessments</span></div>
+        <div class="module-grid">
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('CRLA');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:#fff0f5">📖</div><div class="mc-info"><div class="mc-label">CRLA</div><div class="mc-title">Literacy Assessment</div></div></div>
+            <div class="mc-desc">Classroom-based Reading &amp; Literacy Assessment with individual scoring and class-level reporting.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('RMA');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:#f0f8ff">🔢</div><div class="mc-info"><div class="mc-label">RMA</div><div class="mc-title">Math Assessment</div></div></div>
+            <div class="mc-desc">Rapid Math Assessment for measuring numeracy competencies with automated scoring and analysis.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('Item Analysis');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:#f5f0ff">🧮</div><div class="mc-info"><div class="mc-label">Item Analysis</div><div class="mc-title">Test Item Analysis Tool</div></div></div>
+            <div class="mc-desc">Calculates Difficulty Index, Discriminating Power, and item quality for quarterly and periodical tests.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('Periodical Tests');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:#fff8e1">📈</div><div class="mc-info"><div class="mc-label">Periodical Tests</div><div class="mc-title">Test Results &amp; MPS</div></div></div>
+            <div class="mc-desc">Encode periodical test scores, auto-compute MPS, and track class performance per quarter.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── END OF YEAR ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--amber-light);color:var(--amber)">🏁 End of Year</span></div>
+        <div class="module-grid">
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('SF5');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--amber-light)">🎓</div><div class="mc-info"><div class="mc-label">SF5</div><div class="mc-title">Report on Promotion</div></div></div>
+            <div class="mc-desc">End-of-year report documenting promotion status, retention, and learner proficiency levels.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('SF6');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--amber-light)">📊</div><div class="mc-info"><div class="mc-label">SF6</div><div class="mc-title">Summarized Report on Promotion</div></div></div>
+            <div class="mc-desc">School-wide summary of promotions, retentions, and dropouts submitted to the division.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── HEALTH ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--red-light);color:var(--deped-red)">❤️ Health</span></div>
+        <div class="module-grid">
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('SF8');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--red-light)">⚖️</div><div class="mc-info"><div class="mc-label">SF8</div><div class="mc-title">Nutritional Status / BMI</div></div></div>
+            <div class="mc-desc">Record and auto-classify learner BMI. Generates class summary for DORP.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('NS Baseline');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--red-light)">📋</div><div class="mc-info"><div class="mc-label">NS Baseline</div><div class="mc-title">Nutritional Status Baseline</div></div></div>
+            <div class="mc-desc">Beginning-of-year nutritional baseline with comparison against end-of-year data.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── HOMEROOM ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--green-light);color:var(--green)">🌱 Homeroom &amp; Guidance</span></div>
+        <div class="module-grid">
+          <a href="hg9.html" target="_blank" class="module-card">
+            <div class="mc-head"><div class="mc-icon" style="background:var(--green-light)">🌿</div><div class="mc-info"><div class="mc-label">HG9 — Grade 9</div><div class="mc-title">Homeroom &amp; Guidance 9</div></div></div>
+            <div class="mc-desc">Grade 9 Homeroom &amp; Guidance learning materials, activities, and assessment tools.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot active"></div> Free — Opens in tab</div><div class="mc-arrow" style="color:var(--green)">→</div></div>
+          </a>
+          <a href="hg10.html" target="_blank" class="module-card">
+            <div class="mc-head"><div class="mc-icon" style="background:#d1fae5">🌾</div><div class="mc-info"><div class="mc-label">HG10 — Grade 10</div><div class="mc-title">Homeroom &amp; Guidance 10</div></div></div>
+            <div class="mc-desc">Grade 10 Homeroom &amp; Guidance learning materials, activities, and assessment tools.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot active"></div> Free — Opens in tab</div><div class="mc-arrow" style="color:var(--green)">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── TEACHER TOOLS ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--purple-light);color:var(--purple)">🛠️ Teacher Tools (Free)</span></div>
+        <div class="module-grid">
+          <a href="tarpapel.html" target="_blank" class="module-card">
+            <div class="mc-head"><div class="mc-icon" style="background:var(--purple-light)">🖨️</div><div class="mc-info"><div class="mc-label">Print Tool</div><div class="mc-title">Tarpapel Maker</div></div></div>
+            <div class="mc-desc">Design and print classroom tarpaulins. Customizable layouts and templates.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot active"></div> Free — Opens in tab</div><div class="mc-arrow" style="color:var(--purple)">→</div></div>
+          </a>
+          <a href="certificates.html" target="_blank" class="module-card">
+            <div class="mc-head"><div class="mc-icon" style="background:var(--teal-light)">🎖️</div><div class="mc-info"><div class="mc-label">Bulk Generator</div><div class="mc-title">Certificate Maker</div></div></div>
+            <div class="mc-desc">Generate certificates for your entire class in one go using your Master Student List.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot active"></div> Free — Opens in tab</div><div class="mc-arrow" style="color:var(--teal)">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── PROFESSIONAL ── -->
+      <div class="section">
+        <div class="sec-header"><span class="sec-header-pill" style="background:var(--green-light);color:var(--green)">💼 Professional (Pro)</span></div>
+        <div class="module-grid">
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('e-SAT');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--green-light)">⭐</div><div class="mc-info"><div class="mc-label">e-SAT</div><div class="mc-title">Electronic Self-Assessment Tool</div></div></div>
+            <div class="mc-desc">Digital version of the Teacher Self-Assessment tool for Professional Development planning.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+          <a href="#" class="module-card pro-locked-card" onclick="requirePro('IPCRF/RPMS');return false;">
+            <div class="pro-lock-overlay">🔒 PRO</div>
+            <div class="mc-head"><div class="mc-icon" style="background:var(--green-light)">🏆</div><div class="mc-info"><div class="mc-label">IPCRF / RPMS</div><div class="mc-title">Performance Tracker</div></div></div>
+            <div class="mc-desc">Track IPCRF objectives, encode ratings, and generate performance summary reports.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot gold"></div> Pro Feature</div><div class="mc-arrow">→</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           AI LEARNING MATERIALS — COMING SOON
+      ══════════════════════════════════════════════════ -->
+      <div class="section">
+
+        <!-- AI Section Banner -->
+        <div class="ai-section-banner">
+          <div class="ai-banner-icon">🤖</div>
+          <div class="ai-banner-text">
+            <h3>AI-Powered Learning Materials &amp; Lesson Planning</h3>
+            <p>Automatically generate DLLs, lesson plans, worksheets, exams, and presentations — aligned with DepEd format, powered by AI. Coming very soon!</p>
+          </div>
+          <div class="ai-banner-badge">
+            <div class="pill">🚀 In Development</div>
+            <div class="sub">Notify me when ready</div>
+          </div>
+        </div>
+
+        <div class="notice notice-purple" style="margin-bottom:16px">
+          <div class="notice-icon">✨</div>
+          <div class="notice-body">
+            <div class="notice-title">These tools are under active development</div>
+            Click any module below to register your interest. You'll be notified when each tool launches. These will be included in your Pro subscription at no extra cost.
+          </div>
+        </div>
+
+        <div class="module-grid">
+
+          <!-- DLL Generator -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('DLL Generator');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">📋</div>
+              <div class="mc-info"><div class="mc-label">Lesson Planning AI</div><div class="mc-title">DLL Generator</div></div>
+            </div>
+            <div class="mc-desc">Automatically creates Daily Lesson Logs aligned with DepEd format — just input your topic and grade level.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Lesson Plan with Annotations -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Annotated Lesson Plan');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">📝</div>
+              <div class="mc-info"><div class="mc-label">Lesson Planning AI</div><div class="mc-title">Annotated Lesson Plan</div></div>
+            </div>
+            <div class="mc-desc">Generates lesson plans with clear annotations and justifications — ideal for observations, demonstrations, and evaluations.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Detailed Lesson Plan -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Detailed Lesson Plan');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">🗒️</div>
+              <div class="mc-info"><div class="mc-label">Lesson Planning AI</div><div class="mc-title">Detailed Lesson Plan (DLP)</div></div>
+            </div>
+            <div class="mc-desc">Creates complete, ready-to-use DLPs with objectives, procedures, activities, and assessments in DepEd format.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Lesson Planner 4As/5As/5Es/7Es -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Lesson Planner (4As/5As/5Es/7Es)');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">🗂️</div>
+              <div class="mc-info"><div class="mc-label">Instructional Models</div><div class="mc-title">Lesson Planner — 4As · 5As · 5Es · 7Es</div></div>
+            </div>
+            <div class="mc-desc">Plans lessons using the 4As, 5As, 5Es, or 7Es instructional models — choose the framework that fits your subject.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Gemini PPT -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Gemini PPT');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd)">✨</div>
+              <div class="mc-info"><div class="mc-label">AI Presentation</div><div class="mc-title">Gemini PPT Generator</div></div>
+            </div>
+            <div class="mc-desc">Instantly generates AI-powered PowerPoint presentations based on your lesson topic — ready to use in class.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Worksheet AI -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Worksheet AI');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">📄</div>
+              <div class="mc-info"><div class="mc-label">AI Activity Maker</div><div class="mc-title">Worksheet AI</div></div>
+            </div>
+            <div class="mc-desc">Creates worksheets with MCQs, identification, true/false, matching type, or short answers — tailored to your lesson.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- MG DLP (Multigrade) -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('MG DLP – Multigrade Lesson Plan');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0)">📚</div>
+              <div class="mc-info"><div class="mc-label">Multigrade AI</div><div class="mc-title">MG DLP — Multigrade Lesson Plan</div></div>
+            </div>
+            <div class="mc-desc">Produces Multigrade Lesson Plans for classes combining two grade levels — a DepEd-specific challenge, solved by AI.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Exam Generator -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Exam Generator');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#fee2e2,#fecaca)">📝</div>
+              <div class="mc-info"><div class="mc-label">AI Assessment</div><div class="mc-title">Exam Generator</div></div>
+            </div>
+            <div class="mc-desc">Auto-creates quizzes, unit tests, and exams with adjustable difficulty levels — aligned with learning competencies.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+          <!-- Presentation AI -->
+          <a href="#" class="module-card coming-soon-card" onclick="showComingSoon('Presentation AI');return false;">
+            <div class="coming-soon-overlay">🚀 Soon</div>
+            <div class="mc-head">
+              <div class="mc-icon" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd)">🖥️</div>
+              <div class="mc-info"><div class="mc-label">AI Slides Builder</div><div class="mc-title">Presentation AI</div></div>
+            </div>
+            <div class="mc-desc">Builds ready-to-present teaching content with structured slides and talking points for any subject or grade level.</div>
+            <div class="mc-footer"><div class="mc-status"><div class="dot purple"></div> Coming Soon</div><div class="mc-arrow">→</div></div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ▶ PRICING VIEW ─────────────────────────────────────── -->
+  <div class="view" id="view-pricing">
+    <div class="view-inner">
+      <div class="pg-header">
+        <div class="breadcrumb">🏠 Dashboard › <span>Pro Plans</span></div>
+        <h2>⭐ Upgrade to Teacher Hub Pro</h2>
+        <p>Unlock every module for the entire school year. Cancel anytime.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:16px;margin-bottom:24px" class="section">
+
+        <!-- Free -->
+        <div class="card" style="border-radius:16px;overflow:visible">
+          <div style="padding:24px 22px">
+            <div style="font-size:28px;margin-bottom:8px">🏫</div>
+            <div style="font-size:14px;font-weight:800;margin-bottom:4px">Free Forever</div>
+            <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:10px">
+              <span style="font-size:32px;font-weight:800;font-family:var(--font-mono)">₱0</span>
+              <span style="font-size:11px;color:var(--text3)">/year</span>
+            </div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px">Core tools to get started, no payment needed.</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>✅</span> SF10 – Permanent Record</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>✅</span> Master Student List</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>✅</span> Tarpapel Maker</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>✅</span> Certificate Maker</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>✅</span> HG9 &amp; HG10</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text3);opacity:.55"><span>🔒</span> SF1, SF2, SF5, SF6, SF8</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text3);opacity:.55"><span>🔒</span> CRLA, RMA, Item Analysis</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text3);opacity:.55"><span>🔒</span> AI Lesson Planning Tools</div>
+            </div>
+            <button class="pw-plan-cta cta-free" onclick="showToast('You are on the Free plan.','info')">Current Plan</button>
+          </div>
+        </div>
+
+        <!-- Pro (recommended) -->
+        <div style="background:linear-gradient(160deg,#fffbeb 0%,#fff 60%);border:2px solid #f59e0b;border-radius:16px;box-shadow:0 8px 32px rgba(245,158,11,.2);position:relative;padding:24px 22px;transition:all .2s">
+          <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:3px 14px;border-radius:99px;white-space:nowrap;box-shadow:0 3px 12px rgba(245,158,11,.4)">⭐ BEST VALUE</div>
+          <div style="font-size:28px;margin-bottom:8px">🌟</div>
+          <div style="font-size:14px;font-weight:800;margin-bottom:4px;color:#92400e">Teacher Pro</div>
+          <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px">
+            <span style="font-size:32px;font-weight:800;font-family:var(--font-mono);color:#d97706">₱399</span>
+            <span style="font-size:11px;color:var(--text3)">/year</span>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:10px;font-family:var(--font-mono)">≈ ₱33.25/month</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px">Everything you need for the full school year.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--green);font-weight:600"><span>✅</span> All Free features</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🆕</span> SF1 &amp; SF2 (Enrollment)</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🆕</span> SF5, SF6, SF8 + NS Baseline</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🆕</span> CRLA &amp; RMA Assessments</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🆕</span> Item Analysis &amp; Periodical Tests</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🆕</span> IPCRF / RPMS Tracker</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🆕</span> PDF Export for all forms</div>
+            <div style="display:flex;gap:8px;font-size:11.5px;color:var(--purple);font-weight:600"><span>✨</span> All AI Learning Tools (when live)</div>
+          </div>
+          <button class="pw-plan-cta cta-pro" onclick="openPaywall()">⭐ Get Pro — ₱399/year</button>
+        </div>
+
+        <!-- School License -->
+        <div class="card" style="border-radius:16px;overflow:visible">
+          <div style="padding:24px 22px">
+            <div style="font-size:28px;margin-bottom:8px">🏢</div>
+            <div style="font-size:14px;font-weight:800;margin-bottom:4px">School License</div>
+            <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px">
+              <span style="font-size:32px;font-weight:800;font-family:var(--font-mono)">₱2,499</span>
+              <span style="font-size:11px;color:var(--text3)">/school/year</span>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:10px;font-family:var(--font-mono)">≈ ₱83/teacher (30 seats)</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px">For principals / coordinators buying for the whole faculty.</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--green);font-weight:600"><span>✅</span> All Pro features</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>👥</span> Up to 30 teacher accounts</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>📊</span> School-wide dashboard</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>📞</span> Dedicated onboarding call</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>🔑</span> 30 unique activation keys</div>
+              <div style="display:flex;gap:8px;font-size:11.5px;color:var(--text2)"><span>💰</span> Save vs. individual Pro plans</div>
+            </div>
+            <button class="pw-plan-cta cta-school" onclick="contactSchool()">📞 Contact for School License</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GCash + Activate -->
+      <div class="two-col section">
+        <div class="card">
+          <div class="card-hdr"><div class="card-icon ci-gold">💳</div><div><h3>How to Pay — GCash</h3><p>Simple one-time payment for 1 year</p></div></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border);margin-bottom:16px;flex-wrap:wrap">
+              <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#007bff,#0056b3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">💙</div>
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">GCash Number</div>
+                <div style="font-size:20px;font-weight:800;color:var(--text);font-family:var(--font-mono);letter-spacing:1px">0939-491-1140</div>
+                <div style="font-size:11px;color:var(--text2)">Account Name: <strong>Jowie Flores</strong></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2)"><span style="background:var(--deped-blue);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><span>Send <strong>₱399</strong> via GCash to the number above</span></div>
+              <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2)"><span style="background:var(--deped-blue);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><span>Take a screenshot of the GCash receipt</span></div>
+              <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2)"><span style="background:var(--deped-blue);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><span>Message your receipt via <a href="https://www.facebook.com/jowieflores.freelancer" target="_blank" style="color:var(--blue-mid);font-weight:700">Facebook</a> or email <a href="mailto:jowieflores.freelancer@gmail.com" style="color:var(--blue-mid);font-weight:700">jowieflores.freelancer@gmail.com</a></span></div>
+              <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2)"><span style="background:var(--green);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><span>Receive your <strong>activation key</strong> within 24 hours, enter it below</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><div class="card-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">🔑</div><div><h3>Activate Pro Key</h3><p>Already paid? Enter your key below</p></div></div>
+          <div class="card-body">
+            <div id="activationStatus"></div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="fld">
+                <label>Your Activation Key</label>
+                <input type="text" id="inlineActivateKey" placeholder="e.g. THPRO-XXXX-XXXX-XXXX" class="activate-input" style="letter-spacing:2px;text-transform:uppercase;font-family:var(--font-mono);font-weight:700;font-size:14px;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;width:100%;background:var(--surface2);outline:none" oninput="this.value=this.value.toUpperCase()" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='var(--border)'">
+              </div>
+              <button class="btn btn-gold" onclick="activatePro(document.getElementById('inlineActivateKey').value)">
+                🔓 Activate Pro
+              </button>
+              <div style="font-size:10.5px;color:var(--text3);line-height:1.5">
+                Activation keys are valid for <strong>1 year</strong> from date of purchase and are tied to this browser.<br><br>
+                Having trouble? <a href="https://www.facebook.com/jowieflores.freelancer" target="_blank" style="color:#d97706;font-weight:700">Message on Facebook</a> or email <a href="mailto:jowieflores.freelancer@gmail.com" style="color:#d97706;font-weight:700">jowieflores.freelancer@gmail.com</a> with your GCash reference number.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end app-body -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ PAYWALL MODAL ══════════════════════════════════════ -->
+<div class="paywall-backdrop" id="paywallBackdrop" onclick="closePaywallOnBackdrop(event)">
+  <div class="paywall-modal" id="paywallModal">
+    <button class="paywall-close" onclick="closePaywall()">✕</button>
+
+    <div class="pw-hero">
+      <div class="pw-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+      <div class="pw-hero-badge">⭐ Teacher Hub Pro</div>
+      <h2>Unlock the complete toolkit<br>for Filipino teachers</h2>
+      <p>SF1, SF2, SF5, SF6, SF8 · CRLA &amp; RMA · Item Analysis · IPCRF/RPMS · AI Lesson Tools · PDF Export — all for less than ₱34 a month.</p>
+    </div>
+
+    <div class="pw-pricing">
+
+      <!-- Free -->
+      <div class="pw-plan" onclick="closePaywall()">
+        <div class="pw-plan-icon">🏫</div>
+        <div class="pw-plan-name">Free Forever</div>
+        <div class="pw-plan-price">
+          <span class="pw-price-amount">₱0</span>
+          <span class="pw-price-period">/year</span>
+        </div>
+        <div class="pw-plan-desc">Core tools, no payment needed.</div>
+        <div class="pw-features">
+          <div class="pw-feature"><span class="pf-icon">✅</span> SF10 Permanent Record</div>
+          <div class="pw-feature"><span class="pf-icon">✅</span> Master Student List</div>
+          <div class="pw-feature"><span class="pf-icon">✅</span> Tarpapel &amp; Certificates</div>
+          <div class="pw-feature"><span class="pf-icon">✅</span> HG9 &amp; HG10 Modules</div>
+          <div class="pw-feature locked"><span class="pf-icon">🔒</span> SF1, SF2, SF5, SF6, SF8</div>
+          <div class="pw-feature locked"><span class="pf-icon">🔒</span> CRLA, RMA, Item Analysis</div>
+          <div class="pw-feature locked"><span class="pf-icon">🔒</span> AI Learning Tools</div>
+        </div>
+        <button class="pw-plan-cta cta-free" onclick="closePaywall()">Stay Free</button>
+      </div>
+
+      <!-- Pro (recommended) -->
+      <div class="pw-plan recommended">
+        <div class="pw-best-tag">⭐ BEST VALUE</div>
+        <div class="pw-plan-icon">🌟</div>
+        <div class="pw-plan-name" style="color:#92400e">Teacher Pro</div>
+        <div class="pw-plan-price">
+          <span class="pw-price-amount gold">₱399</span>
+          <span class="pw-price-period">/year</span>
+        </div>
+        <div class="pw-plan-desc" style="color:#78350f">Everything for the full school year. ≈ ₱33.25/month.</div>
+        <div class="pw-features">
+          <div class="pw-feature" style="color:var(--green);font-weight:600"><span class="pf-icon">✅</span> All Free features</div>
+          <div class="pw-feature"><span class="pf-icon">🆕</span> SF1, SF2, SF5, SF6, SF8</div>
+          <div class="pw-feature"><span class="pf-icon">🆕</span> CRLA &amp; RMA Assessments</div>
+          <div class="pw-feature"><span class="pf-icon">🆕</span> Item Analysis &amp; MPS</div>
+          <div class="pw-feature"><span class="pf-icon">🆕</span> IPCRF / RPMS Tracker</div>
+          <div class="pw-feature"><span class="pf-icon">🆕</span> PDF Export for all forms</div>
+          <div class="pw-feature" style="color:var(--purple);font-weight:600"><span class="pf-icon">✨</span> All AI Learning Tools</div>
+        </div>
+        <button class="pw-plan-cta cta-pro" onclick="scrollToGcash()">⭐ Get Pro — ₱399/year →</button>
+      </div>
+
+      <!-- School -->
+      <div class="pw-plan" onclick="contactSchool()">
+        <div class="pw-plan-icon">🏢</div>
+        <div class="pw-plan-name">School License</div>
+        <div class="pw-plan-price">
+          <span class="pw-price-amount">₱2,499</span>
+          <span class="pw-price-period">/school/yr</span>
+        </div>
+        <div class="pw-plan-desc">For principals buying for the whole faculty.</div>
+        <div class="pw-features">
+          <div class="pw-feature" style="color:var(--green);font-weight:600"><span class="pf-icon">✅</span> All Pro features</div>
+          <div class="pw-feature"><span class="pf-icon">👥</span> Up to 30 teachers</div>
+          <div class="pw-feature"><span class="pf-icon">📊</span> School-wide dashboard</div>
+          <div class="pw-feature"><span class="pf-icon">📞</span> Onboarding call</div>
+          <div class="pw-feature"><span class="pf-icon">🔑</span> 30 activation keys</div>
+        </div>
+        <button class="pw-plan-cta cta-school" onclick="contactSchool()">📞 Contact Us</button>
+      </div>
+    </div>
+
+    <div class="pw-gcash" id="gcashSection">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px">💙 Pay via GCash</div>
+      <div class="pw-gcash-inner">
+        <div class="gcash-logo">💙</div>
+        <div class="gcash-info">
+          <div class="gcash-label">GCash Number</div>
+          <div class="gcash-number">0939-491-1140</div>
+          <div class="gcash-name">Jowie Flores</div>
+        </div>
+        <div class="gcash-qr">📱</div>
+      </div>
+      <div class="pw-gcash-note">
+        Send ₱399 → screenshot receipt → message via <a href="https://www.facebook.com/jowieflores.freelancer" target="_blank" style="color:#d97706;font-weight:700">Facebook</a> or <a href="mailto:jowieflores.freelancer@gmail.com" style="color:#d97706;font-weight:700">email</a> → receive your key within 24 hours
+      </div>
+    </div>
+
+    <div class="pw-activate">
+      <div class="pw-activate-title">🔑 Already paid? Enter your activation key</div>
+      <div class="activate-form">
+        <input type="text" class="activate-input" id="modalActivateKey" placeholder="Enter your activation key (e.g. THPRO-XXXX-XXXX-XXXX)" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn btn-gold" onclick="activatePro(document.getElementById('modalActivateKey').value)">🔓 Activate</button>
+      </div>
+      <div class="activate-hint">
+        Keys are sent within <strong>24 hours</strong> of payment confirmation. Valid for 1 school year. Stored in this browser.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PapaParse -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<script>
+const PROFILE_KEY  = 'deped_hub_profile_v1';
+const STUDENTS_KEY = 'deped_hub_students_v1';
+const NOTES_KEY    = 'deped_hub_notes_v1';
+const PRO_KEY      = 'deped_hub_pro_v1';
+
+const VALID_KEY_PREFIXES = ['THPRO-', 'TEACHER-', 'DEPED-'];
+const DEMO_KEYS = ['THPRO-DEMO-2025-FREE', 'THPRO-TEST-ABCD-1234'];
+
+let isProUser = false;
+
+function checkProStatus() {
+  try {
+    const stored = localStorage.getItem(PRO_KEY);
+    if (!stored) return false;
+    const data = JSON.parse(stored);
+    if (data.expiry && new Date() > new Date(data.expiry)) {
+      localStorage.removeItem(PRO_KEY);
+      return false;
+    }
+    return data.key ? true : false;
+  } catch(e) { return false; }
+}
+
+function activatePro(rawKey) {
+  const key = (rawKey || '').trim().toUpperCase();
+  if (!key) { showToast('Please enter your activation key.', 'error'); return; }
+  const isDemoKey = DEMO_KEYS.includes(key);
+  const hasValidPrefix = VALID_KEY_PREFIXES.some(p => key.startsWith(p));
+  const isValidLength = key.length >= 16;
+  if (!isDemoKey && !(hasValidPrefix && isValidLength)) {
+    showToast('❌ Invalid key. Check the key sent to you via GCash.', 'error');
+    return;
+  }
+  const expiry = new Date();
+  expiry.setFullYear(expiry.getFullYear() + 1);
+  const data = { key, activatedAt: new Date().toISOString(), expiry: expiry.toISOString() };
+  localStorage.setItem(PRO_KEY, JSON.stringify(data));
+  isProUser = true;
+  updateProUI();
+  closePaywall();
+  showToast('🌟 Pro activated! All modules are now unlocked.', 'success');
+  const mkEl = document.getElementById('modalActivateKey');
+  const ikEl = document.getElementById('inlineActivateKey');
+  if (mkEl) mkEl.value = '';
+  if (ikEl) ikEl.value = '';
+}
+
+function deactivatePro() {
+  if (!confirm('Remove your Pro activation? You will need your key to reactivate.')) return;
+  localStorage.removeItem(PRO_KEY);
+  isProUser = false;
+  updateProUI();
+  showToast('Pro key removed. Upgrade again anytime.', 'info');
+}
+
+function requirePro(moduleName) {
+  if (isProUser) {
+    showToast(`🔧 ${moduleName} module is coming soon!`, 'info');
+    return;
+  }
+  openPaywall();
+  showToast(`🔒 ${moduleName} requires Teacher Hub Pro.`, 'gold');
+}
+
+function showComingSoon(toolName) {
+  showToast(`🚀 ${toolName} is coming soon! We'll notify you when it's ready.`, 'info');
+}
+
+function updateProUI() {
+  const stored = localStorage.getItem(PRO_KEY);
+  let keyDisplay = '—';
+  if (stored) {
+    try { keyDisplay = JSON.parse(stored).key; } catch(e) {}
+  }
+  const btn = document.getElementById('proTopBtn');
+  if (isProUser) {
+    btn.textContent = '🌟 Pro Active';
+    btn.classList.remove('free-mode');
+    btn.onclick = () => showView('pricing');
+  } else {
+    btn.textContent = '⭐ Upgrade to Pro';
+    btn.classList.add('free-mode');
+    btn.onclick = openPaywall;
+  }
+  const upgradeBanner = document.getElementById('proUpgradeBanner');
+  const activeBanner  = document.getElementById('proActiveBanner');
+  if (isProUser) {
+    upgradeBanner.style.display = 'none';
+    activeBanner.style.display  = 'block';
+    document.getElementById('proKeyDisplay').textContent = keyDisplay ? keyDisplay.slice(0,16)+'…' : '—';
+  } else {
+    upgradeBanner.style.display = 'block';
+    activeBanner.style.display  = 'none';
+  }
+  const spcLabel = document.getElementById('spcLabel');
+  const spcDesc  = document.getElementById('spcDesc');
+  const spcCta   = document.getElementById('sidebarProCta');
+  if (isProUser) {
+    spcLabel.textContent = '🌟 Pro is Active';
+    spcLabel.className = 'spc-label pro-active';
+    spcDesc.textContent  = 'All modules unlocked. Thank you!';
+    spcDesc.className = 'spc-desc pro-active';
+    spcCta.classList.add('is-pro');
+    spcCta.onclick = (e) => { e.preventDefault(); showView('pricing'); };
+  } else {
+    spcLabel.textContent = 'Upgrade to Pro — ₱399/yr';
+    spcLabel.className = 'spc-label';
+    spcDesc.textContent = 'Unlock SF1, SF2, SF8, CRLA, RMA, Item Analysis & more.';
+    spcDesc.className = 'spc-desc';
+    spcCta.classList.remove('is-pro');
+    spcCta.onclick = (e) => { e.preventDefault(); openPaywall(); };
+  }
+  const modulesEl = document.getElementById('dash-modules');
+  const modulesSub = document.getElementById('dash-modules-sub');
+  if (isProUser) {
+    modulesEl.textContent = '14+';
+    modulesSub.textContent = 'all modules unlocked';
+  } else {
+    modulesEl.textContent = '5';
+    modulesSub.textContent = 'free modules ready';
+  }
+  const proQls = document.querySelectorAll('.ql-pro-locked');
+  if (isProUser) {
+    proQls.forEach(el => {
+      el.classList.remove('ql-pro-locked');
+      el.classList.add('ql-featured');
+      const lockTag = el.querySelector('.ql-lock-icon');
+      if (lockTag) lockTag.remove();
+      el.onclick = (e) => { e.preventDefault(); showToast('🔧 Coming soon!','info'); };
+    });
+  }
+}
+
+function openPaywall() {
+  document.getElementById('paywallBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePaywall() {
+  document.getElementById('paywallBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closePaywallOnBackdrop(e) {
+  if (e.target === document.getElementById('paywallBackdrop')) closePaywall();
+}
+function scrollToGcash() {
+  document.getElementById('gcashSection').scrollIntoView({ behavior: 'smooth' });
+}
+function contactSchool() {
+  closePaywall();
+  showToast('📞 Message Jowie on Facebook or email jowieflores.freelancer@gmail.com for school licensing.', 'info');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePaywall(); });
+
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  let greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  const profile = getStoredProfile();
+  const teacherName = profile?.teacher ? ', ' + profile.teacher.split(' ').slice(-1)[0] : '';
+  const el = document.getElementById('dashGreeting');
+  if (el) el.textContent = `${greeting}${teacherName}! 👋`;
+}
+setInterval(updateClock, 1000);
+
+function getStoredProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch(e) { return null; }
+}
+
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const icons = { success:'✅', error:'❌', info:'ℹ️', gold:'⭐' };
+  t.innerHTML = `<span>${icons[type]||'📌'}</span><span>${msg}</span>`;
+  t.className = `toast toast-${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className=`toast toast-${type}`, 3400);
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-'+id);
+  if (el) el.classList.add('active');
+}
+function setActivePill(btn) {
+  document.querySelectorAll('.tb-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const PROFILE_FIELDS = ['school','schoolid','email','addr','region','division','district','sy',
+                        'teacher','empid','designation','grade','section','principal','quarter'];
+
+function getProfile() {
+  const p = {};
+  PROFILE_FIELDS.forEach(k => {
+    const el = document.getElementById('p_'+k);
+    if (el) p[k] = el.value.trim();
+  });
+  return p;
+}
+function fillProfile(data) {
+  if (!data) return;
+  PROFILE_FIELDS.forEach(k => {
+    const el = document.getElementById('p_'+k);
+    if (el && data[k] !== undefined) el.value = data[k];
+  });
+}
+function saveProfile() {
+  const p = getProfile();
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  updateSidebarProfile(p);
+  updateTopBadge(p);
+  updateDashboardChecklist(p);
+  updateClock();
+  const si = document.getElementById('saveIndicator');
+  si.classList.add('visible');
+  setTimeout(() => si.classList.remove('visible'), 3000);
+  showToast('School profile saved successfully!');
+}
+function clearProfile() {
+  PROFILE_FIELDS.forEach(k => { const el = document.getElementById('p_'+k); if(el) el.value=''; });
+  localStorage.removeItem(PROFILE_KEY);
+  updateSidebarProfile({});
+  updateTopBadge({});
+  updateDashboardChecklist({});
+  showToast('Profile cleared.','info');
+}
+function onProfileChange() {
+  const p = getProfile();
+  updateSidebarProfile(p);
+  updateTopBadge(p);
+}
+function loadProfileFromStorage() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      fillProfile(p);
+      updateSidebarProfile(p);
+      updateTopBadge(p);
+      updateDashboardChecklist(p);
+    } else { updateDashboardChecklist({}); }
+  } catch(e) { updateDashboardChecklist({}); }
+}
+function updateSidebarProfile(p) {
+  document.getElementById('sbSchoolName').textContent = p.school || 'School Name Not Set';
+  document.getElementById('sbSchoolMeta').textContent = [p.division, p.region].filter(Boolean).join(' · ') || 'Configure School Profile →';
+  const gs = [p.grade?'Grade '+p.grade:'', p.section, p.sy].filter(Boolean).join(' · ');
+  document.getElementById('sbGradeSec').textContent = gs || '—';
+}
+function updateTopBadge(p) {
+  document.getElementById('topSyBadge').textContent = p.sy ? 'SY '+p.sy : 'SY ——';
+}
+function updateDashboardChecklist(p) {
+  const checks = [
+    {key:'school',label:'School Name',icon:'🏫'},{key:'schoolid',label:'School ID',icon:'🔢'},
+    {key:'region',label:'Region',icon:'🗺️'},{key:'division',label:'Division',icon:'📍'},
+    {key:'district',label:'District',icon:'🏘️'},{key:'sy',label:'School Year',icon:'📅'},
+    {key:'teacher',label:'Teacher Name',icon:'👩‍🏫'},{key:'grade',label:'Grade Level',icon:'🎒'},
+    {key:'section',label:'Section',icon:'🏷️'},{key:'addr',label:'School Address',icon:'📮'},
+    {key:'principal',label:'School Principal',icon:'👔'},{key:'quarter',label:'Grading Period',icon:'🗓️'},
+  ];
+  const el = document.getElementById('profileChecklist');
+  el.innerHTML = checks.map(c => {
+    const filled = p && p[c.key];
+    return `<div style="display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;background:${filled?'var(--green-light)':'var(--surface3)'};border:1px solid ${filled?'rgba(13,110,61,.15)':'var(--border)'}">
+      <span style="font-size:15px">${c.icon}</span>
+      <div style="flex:1;font-size:11.5px;font-weight:${filled?'600':'400'};color:${filled?'var(--green)':'var(--text3)'}">${c.label}</div>
+      <span style="font-size:14px">${filled?'✅':'⭕'}</span>
+    </div>`;
+  }).join('');
+}
+
+function saveNotes() { localStorage.setItem(NOTES_KEY, document.getElementById('quickNotes').value); }
+function clearNotes() {
+  if (!confirm('Clear all notes?')) return;
+  document.getElementById('quickNotes').value = '';
+  localStorage.removeItem(NOTES_KEY);
+  showToast('Notes cleared.','info');
+}
+function loadNotes() {
+  const s = localStorage.getItem(NOTES_KEY);
+  if (s) document.getElementById('quickNotes').value = s;
+}
+
+let masterStudents = [];
+
+function downloadMasterTemplate() {
+  const hdrs = ['LRN','Last Name','First Name','Middle Name','Name Extn','Sex','Birthdate','Mother Tongue','Address','Father Name','Mother Name','Guardian Name','Guardian Contact'];
+  const sample = ['123456789012','DELA CRUZ','JUAN','SANTOS','Jr.','M','07/15/2018','Bikol','Brgy. San Francisco, Labo, Cam. Norte','Pedro Dela Cruz','Maria Santos Dela Cruz','',''];
+  const csv = [hdrs,sample].map(r=>r.join(',')).join('\n');
+  triggerDownload(new Blob([csv],{type:'text/csv'}), 'DepEd_MasterStudentList_Template.csv');
+  showToast('Template downloaded!');
+}
+function triggerDownload(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) processCSV(file);
+  else showToast('Please drop a .csv file.','error');
+}
+function loadMasterCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  processCSV(file);
+  input.value = '';
+}
+function processCSV(file) {
+  Papa.parse(file, {
+    header: true, skipEmptyLines: true,
+    complete: results => {
+      masterStudents = results.data.map((row,i) => {
+        const g = k => (row[k]||'').toString().trim();
+        return { id:i, lrn:g('LRN'), lastName:g('Last Name'), firstName:g('First Name'),
+          middleName:g('Middle Name'), nameExtn:g('Name Extn'), sex:g('Sex'),
+          birthdate:g('Birthdate'), motherTongue:g('Mother Tongue'), address:g('Address'),
+          fatherName:g('Father Name'), motherName:g('Mother Name'),
+          guardianName:g('Guardian Name'), guardianContact:g('Guardian Contact') };
+      });
+      localStorage.setItem(STUDENTS_KEY, JSON.stringify(masterStudents));
+      afterStudentsLoad(file.name);
+      showToast(`Loaded ${masterStudents.length} students from "${file.name}"`);
+    },
+    error: e => showToast('CSV Error: '+e.message,'error')
+  });
+}
+function loadStudentsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STUDENTS_KEY);
+    if (raw) { masterStudents = JSON.parse(raw); afterStudentsLoad('Restored from storage'); }
+  } catch(e) {}
+}
+function afterStudentsLoad(fname) {
+  const total  = masterStudents.length;
+  const male   = masterStudents.filter(s => s.sex.toUpperCase()==='M'||s.sex.toUpperCase()==='MALE').length;
+  const female = masterStudents.filter(s => s.sex.toUpperCase()==='F'||s.sex.toUpperCase()==='FEMALE').length;
+  let ageSum=0, ageCt=0;
+  masterStudents.forEach(s => {
+    if (s.birthdate) {
+      const p = s.birthdate.split('/');
+      if (p.length===3) {
+        const bd = new Date(+p[2],+p[0]-1,+p[1]);
+        const age = (new Date()-bd)/(1000*60*60*24*365.25);
+        if (age>0&&age<99){ageSum+=age;ageCt++;}
+      }
+    }
+  });
+  document.getElementById('sumTotal').textContent  = total;
+  document.getElementById('sumMale').textContent   = male;
+  document.getElementById('sumFemale').textContent = female;
+  document.getElementById('sumAge').textContent    = ageCt?(ageSum/ageCt).toFixed(1):'—';
+  document.getElementById('csvFileName').textContent = fname?`📂 ${fname}`:'';
+  document.getElementById('rosterSubtitle').textContent = `${total} learners loaded`;
+  document.getElementById('dash-total').textContent  = total;
+  document.getElementById('dash-male').textContent   = male;
+  document.getElementById('dash-female').textContent = female;
+  renderStudentTable();
+}
+function renderStudentTable() {
+  const q = (document.getElementById('searchStudents').value||'').toLowerCase();
+  const filtered = masterStudents.filter(s => (s.lastName+s.firstName+s.lrn+s.middleName).toLowerCase().includes(q));
+  const tbody = document.getElementById('studentTableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty"><div class="te-icon">${masterStudents.length?'🔍':'👥'}</div>${masterStudents.length?'No results found.':'Upload a CSV file to populate the student roster.'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map((s,i) => {
+    const sc = (s.sex.toUpperCase()==='M'||s.sex.toUpperCase()==='MALE') ? `<span class="chip chip-m">M</span>` : `<span class="chip chip-f">F</span>`;
+    const name = [s.lastName, s.firstName, s.middleName?s.middleName[0]+'.':''].filter(Boolean).join(', ');
+    return `<tr><td style="color:var(--text3);font-size:11px;font-family:var(--font-mono)">${i+1}</td><td class="name-cell">${name||'(Unnamed)'}${s.nameExtn?' '+s.nameExtn:''}</td><td class="lrn-cell">${s.lrn||'—'}</td><td>${sc}</td><td style="font-family:var(--font-mono);font-size:11px">${s.birthdate||'—'}</td><td>${s.motherTongue||'—'}</td><td style="font-size:11px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.address||'—'}</td></tr>`;
+  }).join('');
+}
+function clearStudents() {
+  if (!confirm('Remove all students from the master list?')) return;
+  masterStudents = [];
+  localStorage.removeItem(STUDENTS_KEY);
+  afterStudentsLoad('');
+  document.getElementById('csvFileName').textContent = 'No file uploaded yet';
+  showToast('Master list cleared.','info');
+}
+
+function exportAllData() {
+  const payload = { version:1, exportedAt:new Date().toISOString(), profile:getProfile(), students:masterStudents, notes:document.getElementById('quickNotes').value };
+  const sy = (getProfile().sy||'backup').replace(/[^a-z0-9\-]/gi,'_');
+  triggerDownload(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), `DepEd_Hub_Backup_${sy}.json`);
+  showToast('Full backup exported!');
+}
+function importAllData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.profile) { fillProfile(data.profile); localStorage.setItem(PROFILE_KEY,JSON.stringify(data.profile)); updateSidebarProfile(data.profile); updateTopBadge(data.profile); updateDashboardChecklist(data.profile); }
+      if (data.students&&Array.isArray(data.students)) { masterStudents=data.students; localStorage.setItem(STUDENTS_KEY,JSON.stringify(masterStudents)); afterStudentsLoad('Imported from backup'); }
+      if (data.notes) { document.getElementById('quickNotes').value=data.notes; localStorage.setItem(NOTES_KEY,data.notes); }
+      showToast(`Backup imported: ${masterStudents.length} students`);
+    } catch(err) { showToast('Invalid backup file.','error'); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+isProUser = checkProStatus();
+loadProfileFromStorage();
+loadStudentsFromStorage();
+loadNotes();
+updateClock();
+updateProUI();
+</script>
+</body>
+</html>

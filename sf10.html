@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SF10-ES Digital System — DepEd Philippines</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════════ */
+:root {
+  --bg:       #0c1017;
+  --surface:  #131920;
+  --surface2: #1a2230;
+  --surface3: #212d3d;
+  --border:   #263040;
+  --border2:  #344055;
+  --accent:   #1a6fc4;
+  --accent2:  #2080d8;
+  --gold:     #e8a020;
+  --gold2:    #f5b030;
+  --green:    #27ae60;
+  --green2:   #2ecc71;
+  --red:      #c0392b;
+  --red2:     #e74c3c;
+  --orange:   #d35400;
+  --purple:   #7b3fa0;
+  --text:     #dce8f0;
+  --text2:    #8aa0b8;
+  --text3:    #506070;
+  --setup-w:  272px;
+  --sidebar-w:300px;
+  --hdr-h:    54px;
+  --radius:   7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:13px}
+
+/* ── TOP BAR ─────────────────────────────── */
+.topbar{height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:300}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#1565C0,#1a85e0);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;letter-spacing:-.3px;flex-shrink:0}
+.brand-text h1{font-size:13.5px;font-weight:700;line-height:1.2}
+.brand-text p{font-size:10px;color:var(--text3)}
+.tbdiv{width:1px;height:28px;background:var(--border);margin:0 2px;flex-shrink:0}
+.tbnav{display:flex;gap:2px}
+.tbbtn{padding:6px 13px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .15s;font-family:inherit;white-space:nowrap}
+.tbbtn:hover{background:var(--surface2);color:var(--text)}
+.tbbtn.active{background:var(--accent);color:#fff}
+.tbright{margin-left:auto;display:flex;gap:7px;align-items:center}
+.badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;font-family:'Courier New',monospace}
+.badge-grey{background:var(--surface2);color:var(--text3)}
+.badge-green{background:#0d2d1a;color:#3dd68c}
+
+/* ── BUTTONS ─────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--radius);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--border);transition:all .15s;white-space:nowrap}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn-ghost{background:transparent;color:var(--text2)}.btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent2)}.btn-primary:hover{background:var(--accent2)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green2)}.btn-green:hover{background:var(--green2)}
+.btn-gold{background:var(--gold);color:#000;border-color:var(--gold2);font-weight:700}.btn-gold:hover{background:var(--gold2)}
+.btn-orange{background:var(--orange);color:#fff;border-color:#e67e22}.btn-orange:hover{background:#e67e22}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red2)}.btn-red:hover{background:var(--red2)}
+.btn-purple{background:var(--purple);color:#fff;border-color:#9b59b6}.btn-purple:hover{background:#9b59b6}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+
+/* ── LAYOUT ──────────────────────────────── */
+.appbody{display:flex;flex:1;overflow:hidden}
+
+/* ── SETUP PANEL ─────────────────────────── */
+.setup-panel{width:var(--setup-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.setup-panel::-webkit-scrollbar{width:3px}
+.setup-panel::-webkit-scrollbar-thumb{background:var(--border)}
+
+.psection{padding:14px;border-bottom:1px solid var(--border)}
+.psection h3{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;color:var(--text3);margin-bottom:11px;display:flex;align-items:center;gap:6px}
+.psection h3 svg{width:12px;height:12px;flex-shrink:0}
+.fld{margin-bottom:9px}
+.fld label{display:block;font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500}
+.fld input,.fld select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 9px;font-size:11.5px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s}
+.fld input:focus,.fld select:focus{border-color:var(--accent2)}
+.fld input::placeholder{color:var(--text3)}
+.save-row{display:flex;gap:6px;margin-top:6px}
+.save-row .btn{flex:1;justify-content:center;font-size:11px}
+.setup-status{font-size:10px;color:var(--green2);text-align:center;margin-top:5px;min-height:14px;transition:opacity .3s}
+
+/* Stat cards in setup */
+.stat-cards{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 10px 8px;text-align:center}
+.stat-card .sc-val{font-size:20px;font-weight:800;line-height:1;margin-bottom:2px}
+.stat-card .sc-lbl{font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.sc-blue{color:var(--accent2)}.sc-gold{color:var(--gold)}.sc-green{color:var(--green2)}.sc-red{color:var(--red2)}
+
+/* Progress bar */
+.prog-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.prog-section h3{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;color:var(--text3);margin-bottom:10px}
+.prog-item{margin-bottom:8px}
+.prog-label{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
+.prog-label span:first-child{color:var(--text2)}
+.prog-label span:last-child{color:var(--text);font-weight:600}
+.prog-bar{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* ── STUDENT SIDEBAR ─────────────────────── */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-hdr{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sidebar-hdr h3{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;color:var(--text3);margin-bottom:9px}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text3);pointer-events:none}
+.search-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 9px 7px 30px;font-size:12px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--accent2)}
+.search-wrap input::placeholder{color:var(--text3)}
+
+.filter-row{display:flex;gap:4px;margin-top:7px}
+.filter-chip{padding:4px 9px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:inherit;transition:all .15s;white-space:nowrap}
+.filter-chip:hover{border-color:var(--border2);color:var(--text2)}
+.filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent2)}
+
+.slist{flex:1;overflow-y:auto;padding:6px}
+.slist::-webkit-scrollbar{width:3px}
+.slist::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.sitem{padding:9px 11px;border-radius:7px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;transition:all .12s;display:flex;align-items:center;gap:10px;position:relative}
+.sitem:hover{background:var(--surface2)}
+.sitem.active{background:#162540;border-color:var(--accent)}
+.savatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;font-family:inherit}
+.sinfo .sname{font-size:12px;font-weight:600;color:var(--text);line-height:1.3}
+.sinfo .smeta{font-size:10px;color:var(--text3);font-family:'Courier New',monospace;margin-top:1px}
+.sitem-badge{margin-left:auto;flex-shrink:0;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px}
+.sbadge-p{background:#0d2d1a;color:#3dd68c}
+.sbadge-i{background:#1a2840;color:#5aabff}
+.sbadge-f{background:#2d0d0d;color:#ff6b6b}
+
+.empty-list{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;gap:8px;color:var(--text3);font-size:11px;text-align:center;padding:20px}
+.empty-list svg{width:30px;height:30px;opacity:.35}
+.slist-footer{padding:6px 14px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:center}
+
+/* ── PREVIEW AREA ────────────────────────── */
+.preview-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#1a1e26}
+.preview-bar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.pb-label{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.pb-label svg{width:13px;height:13px}
+.pb-student{font-size:12.5px;font-weight:700;color:var(--gold)}
+.pb-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.pg-dots{display:flex;gap:3px;align-items:center;font-size:10px;color:var(--text3)}
+.pg-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.pg-dot.on{background:var(--accent2)}
+
+.preview-canvas{flex:1;overflow:auto;padding:30px 40px;display:flex;flex-direction:column;align-items:center;gap:30px}
+.preview-canvas::-webkit-scrollbar{width:6px}
+.preview-canvas::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── MODAL ───────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:480px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-hdr h2{font-size:14px;font-weight:700}
+.modal-close{width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.modal-body{padding:20px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--border)}
+
+/* Notes textarea */
+.notes-area{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;font-family:inherit;color:var(--text);resize:vertical;min-height:100px;outline:none}
+.notes-area:focus{border-color:var(--accent2)}
+
+/* ── TOAST ───────────────────────────────── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--green2);border-radius:8px;padding:11px 16px;font-size:12px;color:var(--text);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);max-width:320px;display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{border-left-color:var(--red2)}
+.toast.warn{border-left-color:var(--gold)}
+
+/* ════════════════════════════════════════════════════════════
+   SF10-ES PHYSICAL FORM STYLES
+════════════════════════════════════════════════════════════ */
+.sf10-page{
+  background:#fff;color:#000;
+  width:816px;
+  box-shadow:0 16px 56px rgba(0,0,0,.65);
+  padding:22px 24px 18px;
+  font-family:'Arial Narrow',Arial,sans-serif;
+  font-size:7pt;
+  position:relative;
+  flex-shrink:0;
+  border:none;
+}
+
+/* Header */
+.sf-header{display:flex;align-items:center;margin-bottom:6px;gap:8px}
+.sf-seal-box{width:66px;height:66px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sf-seal-box img{width:66px;height:66px;object-fit:contain}
+.sf-header-center{flex:1;text-align:center;line-height:1.5}
+.sf-header-center .rep{font-size:7.5pt}
+.sf-header-center .dept{font-size:8pt}
+.sf-header-center .title{font-size:12pt;font-weight:bold;margin:3px 0 1px;line-height:1.2}
+.sf-header-center .sub{font-size:7pt;font-style:italic}
+.sf-logo-box{width:66px;height:66px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sf-logo-box img{width:66px;height:66px;object-fit:contain}
+
+/* Section bands */
+.sf-band{background:#D1D1D1;color:#000;text-align:center;font-weight:bold;font-size:7.5pt;padding:3px 0;border:1px solid #000;margin:5px 0 0;letter-spacing:.4px;text-transform:uppercase}
+.sf-band.schol-band{font-size:8.5pt;padding:3.5px 0;border:1.5px solid #000;margin:6px 0 0}
+
+/* Info box */
+.sf-info-box{border:1px solid #000;border-top:none;padding:0}
+.sf-info-row{display:flex;border-bottom:1px solid #000}
+.sf-info-row:last-child{border-bottom:none}
+.sf-ic{display:flex;flex-direction:column;padding:2px 5px 3px;border-right:1px solid #000;min-width:0}
+.sf-ic:last-child{border-right:none}
+.sf-ic label{font-size:5.5pt;font-weight:bold;color:#000;white-space:nowrap;display:block;margin-bottom:1px}
+.sf-ic input{font-size:8.5pt;font-weight:bold;font-family:'Arial Narrow',Arial,sans-serif;border:none;outline:none;background:transparent;width:100%;color:#000;padding:0;line-height:1}
+.sf-ic input:focus{background:#FFF9C4}
+
+/* Eligibility */
+.sf-elig-box{border:1px solid #000;border-top:none;padding:4px 6px 4px}
+.sf-elig-top{display:flex;align-items:center;gap:14px;margin-bottom:3px;flex-wrap:wrap}
+.sf-elig-top em{font-size:6.5pt}
+.sf-ck{display:flex;align-items:center;gap:3px;font-size:7pt;cursor:pointer}
+.sf-ck input[type=checkbox]{width:11px;height:11px;accent-color:#000;cursor:pointer}
+.sf-elig-row2{display:flex;gap:0;border-top:1px solid #000;border-bottom:1px solid #000;margin:3px 0}
+.sf-ef{flex:1;padding:2px 5px;border-right:1px solid #000;display:flex;align-items:baseline;gap:3px;font-size:7pt}
+.sf-ef:last-child{border-right:none}
+.sf-ef label{font-weight:bold;white-space:nowrap;font-size:6pt}
+.sf-ef input{flex:1;border:none;border-bottom:1px solid #aaa;font-size:7pt;font-family:'Arial Narrow',Arial,sans-serif;background:transparent;outline:none;color:#000}
+.sf-elig-other{font-size:6.5pt;margin-top:3px}
+.sf-elig-other .o-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.sf-elig-other .o-f{display:flex;align-items:baseline;gap:3px}
+.sf-elig-other .o-f label{white-space:nowrap;font-size:6pt}
+.sf-elig-other .o-f input{border:none;border-bottom:1px solid #aaa;background:transparent;font-size:6.5pt;font-family:'Arial Narrow',Arial,sans-serif;outline:none;color:#000}
+
+/* Scholastic grid */
+.sf-schol-grid{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid #000;margin-top:1px}
+.sf-schol-grid + .sf-schol-grid{border-top:none;margin-top:5px}
+.sf-col{border-right:1.5px solid #000}
+.sf-col:last-child{border-right:none}
+.sf-block{padding:5px 6px 4px}
+
+/* Meta fields */
+.sf-mlines{font-size:6.5pt;margin-bottom:3px}
+.sf-mline{display:flex;gap:0;margin-bottom:1.5px;align-items:baseline;flex-wrap:wrap}
+.sf-mf{display:flex;align-items:baseline;gap:2px;padding-right:8px;flex-shrink:0}
+.sf-mf label{font-weight:bold;white-space:nowrap;color:#000;font-size:6pt}
+.sf-mf input{border:none;border-bottom:1px solid #bbb;font-size:6.5pt;font-family:'Arial Narrow',Arial,sans-serif;background:transparent;outline:none;color:#000;min-width:0}
+.sf-mf input:focus{background:#FFF9C4}
+
+/* Grade table */
+.sf-gt{width:100%;border-collapse:collapse;font-size:6.5pt;font-family:'Arial Narrow',Arial,sans-serif;table-layout:fixed}
+.sf-gt th{background:#D1D1D1;border:1px solid #000;padding:2px 1px;text-align:center;font-size:5.5pt;font-weight:bold;line-height:1.25}
+.sf-gt td{border:1px solid #000;padding:0 1px;text-align:center;height:12px;vertical-align:middle;font-size:6pt;line-height:1}
+.sf-gt td.ac{text-align:left;padding-left:4px;font-size:6.5pt}
+.sf-gt td.ac.sub{padding-left:13px;font-style:italic;font-size:6pt}
+.sf-gt .avg td{font-weight:bold;background:#EFEFEF}
+.sf-gt td input{width:100%;border:none;background:transparent;text-align:center;outline:none;font-size:6.5pt;font-family:'Arial Narrow',Arial,sans-serif;color:#000;padding:0;height:100%}
+.sf-gt td input:focus{background:#FFF9C4}
+.sf-gt td.rc input{font-size:6pt}
+
+/* Auto-computed avg highlight */
+.sf-gt td.computed input{color:#0050a0;font-weight:bold}
+
+/* Remedial block */
+.sf-rem{margin-top:3px;border:1px solid #000;border-top:1.5px solid #000}
+.sf-rem-hdr{display:flex;align-items:center;background:#EFEFEF;border-bottom:1px solid #000;padding:2px 4px;font-size:6pt;font-weight:bold;gap:6px}
+.sf-rem-hdr .rd{display:flex;align-items:center;gap:4px;font-weight:normal;font-size:6pt}
+.sf-rem-hdr input{border:none;border-bottom:1px solid #aaa;background:transparent;font-size:6pt;font-family:'Arial Narrow',Arial,sans-serif;outline:none;color:#000;width:62px}
+.sf-rt{width:100%;border-collapse:collapse;font-size:5.5pt;table-layout:fixed}
+.sf-rt th{background:#EFEFEF;border:1px solid #000;padding:1.5px 1px;text-align:center;font-size:5pt;font-weight:bold}
+.sf-rt td{border:1px solid #000;height:9px;padding:0 1px}
+.sf-rt td input{width:100%;border:none;background:transparent;font-size:5.5pt;text-align:center;font-family:'Arial Narrow',Arial,sans-serif;outline:none;color:#000;padding:0}
+.sf-rt td:first-child input{text-align:left}
+.sf-rt td input:focus{background:#FFF9C4}
+
+/* Certification */
+.sf-cert-section{margin-top:7px;border-top:1.5px solid #000;padding-top:5px}
+.sf-cert-lbl{font-size:6pt;font-style:italic;margin-bottom:4px}
+.sf-cert-box{border:1px solid #000;padding:5px 8px;margin-bottom:5px}
+.sf-cert-title{font-size:7.5pt;font-weight:bold;text-align:center;margin-bottom:4px;letter-spacing:.3px}
+.sf-cert-body{font-size:6.5pt;margin-bottom:5px;line-height:1.7}
+.sf-cert-body input{border:none;border-bottom:1px solid #333;background:transparent;font-size:6.5pt;font-family:'Arial Narrow',Arial,sans-serif;outline:none;color:#000;vertical-align:middle}
+.sf-cert-srow{display:flex;gap:0;border-top:1px solid #000;border-bottom:1px solid #000;margin-bottom:7px}
+.sf-csf{flex:1;padding:2px 5px;border-right:1px solid #000;font-size:6pt;display:flex;align-items:baseline;gap:2px}
+.sf-csf:last-child{border-right:none}
+.sf-csf label{font-weight:bold;white-space:nowrap}
+.sf-csf input{flex:1;border:none;background:transparent;font-size:6pt;font-family:'Arial Narrow',Arial,sans-serif;outline:none;color:#000}
+.sf-sig-row{display:grid;grid-template-columns:90px 1fr 90px;gap:12px;align-items:end;font-size:5.5pt;text-align:center}
+.sf-sigline{border-top:1px solid #000;padding-top:2px}
+.sf-seal-placeholder{border:1px solid #aaa;height:44px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:5pt}
+
+.sf-form-id{font-size:6pt;color:#555;font-family:Arial,sans-serif}
+.sf-form-id.r{text-align:right}
+.sf-footer{display:flex;justify-content:space-between;font-size:6pt;color:#555;margin-top:5px;font-family:Arial,sans-serif}
+
+/* ── PRINT ───────────────────────────────── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff!important;overflow:visible!important;height:auto!important}
+  .topbar,.setup-panel,.sidebar,.preview-bar{display:none!important}
+  .appbody{display:block!important}
+  .preview-wrap{display:block!important;overflow:visible!important}
+  .preview-canvas{padding:0!important;gap:0!important;display:block!important;overflow:visible!important;background:none!important}
+  .sf10-page{box-shadow:none!important;width:8.5in!important;min-height:13in!important;padding:0.38in 0.36in 0.3in!important;page-break-after:always;margin:0!important}
+  .sf10-page:last-child{page-break-after:avoid}
+  @page{size:8.5in 13in;margin:0}
+  .sf-band,.sf-band.schol-band,.sf-gt th{background:#D1D1D1!important}
+  .sf-rem-hdr,.sf-rt th,.sf-gt .avg td{background:#EFEFEF!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══════════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">SF10</div>
+    <div class="brand-text">
+      <h1>SF10-ES Digital System</h1>
+      <p>DepEd Philippines — Learner Permanent Record</p>
+    </div>
+  </div>
+  <div class="tbdiv"></div>
+  <div class="tbnav">
+    <button class="tbbtn active" onclick="switchTab('form',this)">📋 Form View</button>
+    <button class="tbbtn" onclick="switchTab('stats',this)">📊 Class Statistics</button>
+  </div>
+  <div class="tbright">
+    <span class="badge badge-grey" id="studentBadge">0 students</span>
+    <button class="btn btn-ghost" onclick="downloadCSVFormat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      CSV Template
+    </button>
+    <button class="btn btn-primary" onclick="document.getElementById('csvUpload').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Database
+    </button>
+    <input type="file" id="csvUpload" accept=".csv" style="display:none" onchange="loadCSV(this)">
+    <button class="btn btn-purple" onclick="exportBackup()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export JSON
+    </button>
+    <button class="btn btn-ghost" onclick="document.getElementById('jsonUpload').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import JSON
+    </button>
+    <input type="file" id="jsonUpload" accept=".json" style="display:none" onchange="importBackup(this)">
+    <div class="tbdiv"></div>
+    <button class="btn btn-orange" id="printAllBtn" onclick="printAll()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print All
+    </button>
+    <button class="btn btn-gold" id="printBtn" onclick="printCurrent()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print This
+    </button>
+  </div>
+</div>
+
+<!-- ══ BODY ════════════════════════════════════════════════ -->
+<div class="appbody">
+
+  <!-- SETUP PANEL -->
+  <div class="setup-panel">
+
+    <!-- Stat summary cards -->
+    <div class="stat-cards">
+      <div class="stat-card"><div class="sc-val sc-blue" id="sc-total">0</div><div class="sc-lbl">Students</div></div>
+      <div class="stat-card"><div class="sc-val sc-green" id="sc-promoted">0</div><div class="sc-lbl">Promoted</div></div>
+      <div class="stat-card"><div class="sc-val sc-gold" id="sc-avg">—</div><div class="sc-lbl">Class Avg</div></div>
+      <div class="stat-card"><div class="sc-val sc-red" id="sc-failed">0</div><div class="sc-lbl">For Review</div></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="prog-section">
+      <h3>Class Overview</h3>
+      <div class="prog-item">
+        <div class="prog-label"><span>Promoted</span><span id="prog-p-lbl">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-p" style="width:0%;background:var(--green2)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label"><span>Incomplete</span><span id="prog-i-lbl">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-i" style="width:0%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label"><span>For Review</span><span id="prog-f-lbl">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-f" style="width:0%;background:var(--red2)"></div></div>
+      </div>
+    </div>
+
+    <!-- School Setup -->
+    <div class="psection">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        School Setup
+      </h3>
+      <div class="fld"><label>School Name</label><input type="text" id="s_school" placeholder="e.g. LABO ELEMENTARY SCHOOL" oninput="onSetupChange()"></div>
+      <div class="fld"><label>School ID</label><input type="text" id="s_schoolid" placeholder="e.g. 112186" oninput="onSetupChange()"></div>
+      <div class="fld"><label>Address of School</label><input type="text" id="s_addr" placeholder="e.g. San Francisco, Labo, Cam. Norte" oninput="onSetupChange()"></div>
+      <div class="fld"><label>District</label><input type="text" id="s_district" placeholder="e.g. LABO EAST" oninput="onSetupChange()"></div>
+      <div class="fld"><label>Division</label><input type="text" id="s_division" placeholder="e.g. CAMARINES NORTE" oninput="onSetupChange()"></div>
+      <div class="fld"><label>Region</label><input type="text" id="s_region" placeholder="e.g. V-BICOL" oninput="onSetupChange()"></div>
+    </div>
+
+    <div class="psection">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Class Details
+      </h3>
+      <div class="fld"><label>Teacher / Adviser Name</label><input type="text" id="s_teacher" placeholder="e.g. MARIA C. SANTOS" oninput="onSetupChange()"></div>
+      <div class="fld"><label>Grade Level</label><input type="text" id="s_grade" placeholder="e.g. 1" oninput="onSetupChange()"></div>
+      <div class="fld"><label>Section</label><input type="text" id="s_section" placeholder="e.g. MASUNURIN" oninput="onSetupChange()"></div>
+      <div class="fld"><label>School Year</label><input type="text" id="s_sy" placeholder="e.g. 2025-2026" oninput="onSetupChange()"></div>
+      <div class="save-row">
+        <button class="btn btn-green" onclick="saveSetup()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Setup
+        </button>
+        <button class="btn btn-ghost" onclick="clearSetup()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Clear
+        </button>
+      </div>
+      <div class="setup-status" id="setupStatus"></div>
+    </div>
+
+  </div>
+
+  <!-- STUDENT SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-hdr">
+      <h3>Student Roster</h3>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search name or LRN…" oninput="filterStudents()">
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-chip" onclick="setFilter('promoted',this)">✅ Promoted</button>
+        <button class="filter-chip" onclick="setFilter('incomplete',this)">⏳ Incomplete</button>
+        <button class="filter-chip" onclick="setFilter('failed',this)">⚠️ Review</button>
+      </div>
+    </div>
+    <div class="slist" id="studentList">
+      <div class="empty-list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Upload a CSV to load your class roster.
+      </div>
+    </div>
+    <div class="slist-footer" id="listFooter"></div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap">
+    <div class="preview-bar">
+      <div class="pb-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Philippine Legal — 8.5" × 13"
+      </div>
+      <span class="pb-student" id="previewName">No student selected</span>
+      <div class="pb-right">
+        <button class="btn btn-ghost" id="noteBtn" onclick="openNotes()" disabled style="font-size:11px">
+          📝 Notes
+        </button>
+        <div class="tbdiv"></div>
+        <div class="pg-dots">
+          <span>Pg 1</span>
+          <div class="pg-dot on"></div>
+          <div class="pg-dot on"></div>
+          <span>Pg 2</span>
+        </div>
+      </div>
+    </div>
+    <div class="preview-canvas" id="previewCanvas"></div>
+  </div>
+
+</div><!-- end appbody -->
+
+<!-- ══ NOTES MODAL ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>📝 Teacher Notes — <span id="notesStudentName"></span></h2>
+      <button class="modal-close" onclick="closeModal('notesModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Private notes visible only in this app. Saved automatically to the student record.</p>
+      <textarea class="notes-area" id="notesTextarea" placeholder="e.g. Needs extra support in Reading. Parent contacted on 2025-03-10…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('notesModal')">Cancel</button>
+      <button class="btn btn-green" onclick="saveNotes()">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STATS VIEW ════════════════════════════════════════════ -->
+<div id="statsView" style="display:none;position:fixed;inset:0;top:54px;background:var(--bg);z-index:200;overflow:auto;padding:30px 40px">
+  <h2 style="font-size:18px;margin-bottom:4px">📊 Class Statistics</h2>
+  <p style="color:var(--text3);font-size:12px;margin-bottom:24px">Aggregated from the uploaded student database.</p>
+  <div id="statsContent" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let students = [];
+let filteredStudents = [];
+let selectedId = null;
+let activeFilter = 'all';
+let currentTab = 'form';
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  const icons = {ok:'✅',err:'❌',warn:'⚠️'};
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  t.className = `toast${type==='err'?' err':type==='warn'?' warn':''} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = `toast${type==='err'?' err':type==='warn'?' warn':''}`, 3200);
+}
+
+// ═══════════════════════════════════════════════════════
+// SETUP — SAVE / LOAD via localStorage
+// ═══════════════════════════════════════════════════════
+const SETUP_KEY = 'sf10es_setup_v1';
+const STUDENTS_KEY = 'sf10es_students_v1';
+
+function getSetup() {
+  return {
+    school:   document.getElementById('s_school').value.trim(),
+    schoolid: document.getElementById('s_schoolid').value.trim(),
+    addr:     document.getElementById('s_addr').value.trim(),
+    district: document.getElementById('s_district').value.trim(),
+    division: document.getElementById('s_division').value.trim(),
+    region:   document.getElementById('s_region').value.trim(),
+    teacher:  document.getElementById('s_teacher').value.trim(),
+    grade:    document.getElementById('s_grade').value.trim(),
+    section:  document.getElementById('s_section').value.trim(),
+    sy:       document.getElementById('s_sy').value.trim(),
+  };
+}
+
+function fillSetup(data) {
+  if (!data) return;
+  ['school','schoolid','addr','district','division','region','teacher','grade','section','sy']
+    .forEach(k => { const el = document.getElementById('s_'+k); if(el && data[k] !== undefined) el.value = data[k]; });
+}
+
+function saveSetup() {
+  const data = getSetup();
+  localStorage.setItem(SETUP_KEY, JSON.stringify(data));
+  const s = document.getElementById('setupStatus');
+  s.textContent = '✓ Saved at ' + new Date().toLocaleTimeString();
+  setTimeout(() => s.textContent = '', 4000);
+  refreshPreview();
+  showToast('Setup saved to browser storage');
+}
+
+function clearSetup() {
+  ['school','schoolid','addr','district','division','region','teacher','grade','section','sy']
+    .forEach(k => { const el = document.getElementById('s_'+k); if(el) el.value = ''; });
+  localStorage.removeItem(SETUP_KEY);
+  refreshPreview();
+  showToast('Setup cleared','warn');
+}
+
+function loadSetupFromStorage() {
+  try {
+    const raw = localStorage.getItem(SETUP_KEY);
+    if (raw) { fillSetup(JSON.parse(raw)); }
+  } catch(e) {}
+}
+
+function onSetupChange() { refreshPreview(); }
+
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tbbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('statsView').style.display = tab === 'stats' ? 'block' : 'none';
+  if (tab === 'stats') buildStatsView();
+}
+
+// ═══════════════════════════════════════════════════════
+// CSV FORMAT DOWNLOAD
+// ═══════════════════════════════════════════════════════
+function downloadCSVFormat() {
+  const hdrs = [
+    'Last Name','First Name','Middle Name','Name Extn','LRN','Birthdate','Sex',
+    'Kinder Progress Report','ECCD Checklist','Kinder Certificate',
+    'Q1_GMRC','Q2_GMRC','Q3_GMRC','Q4_GMRC','Final_GMRC','Remarks_GMRC',
+    'Q1_Reading','Q2_Reading','Q3_Reading','Q4_Reading','Final_Reading','Remarks_Reading',
+    'Q1_Language','Q2_Language','Q3_Language','Q4_Language','Final_Language','Remarks_Language',
+    'Q1_Math','Q2_Math','Q3_Math','Q4_Math','Final_Math','Remarks_Math',
+    'Q1_Makabansa','Q2_Makabansa','Q3_Makabansa','Q4_Makabansa','Final_Makabansa','Remarks_Makabansa',
+    'Q1_Science','Q2_Science','Q3_Science','Q4_Science','Final_Science','Remarks_Science',
+    'Q1_ICT','Q2_ICT','Q3_ICT','Q4_ICT','Final_ICT','Remarks_ICT',
+    'Q1_MAPEH','Q2_MAPEH','Q3_MAPEH','Q4_MAPEH','Final_MAPEH','Remarks_MAPEH',
+    'Q1_Music','Q2_Music','Q3_Music','Q4_Music','Final_Music',
+    'Q1_Arts','Q2_Arts','Q3_Arts','Q4_Arts','Final_Arts',
+    'Q1_PE','Q2_PE','Q3_PE','Q4_PE','Final_PE',
+    'Q1_Health','Q2_Health','Q3_Health','Q4_Health','Final_Health',
+    'General_Average','Average_Remarks'
+  ];
+  const sample = [
+    'DELA CRUZ','JUAN','SANTOS','Jr.','123456789012','07/15/2019','M',
+    'TRUE','FALSE','FALSE',
+    '86','86','86','86','86','PASSED',
+    '83','84','86','86','85','PASSED',
+    '81','86','84','91','86','PASSED',
+    '80','80','80','80','80','PASSED',
+    '83','83','83','83','83','PASSED',
+    '','','','','','',
+    '','','','','','',
+    '','','','','','',
+    '','','','','',
+    '','','','','',
+    '','','','','',
+    '','','','','',
+    '84','PROMOTED'
+  ];
+  const blob = new Blob([[hdrs.join(','), sample.join(',')].join('\n')], {type:'text/csv'});
+  triggerDownload(blob, 'SF10-ES_Database_Template.csv');
+  showToast('CSV template downloaded!');
+}
+
+function triggerDownload(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ═══════════════════════════════════════════════════════
+// JSON EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════
+function exportBackup() {
+  const payload = { setup: getSetup(), students, exportedAt: new Date().toISOString(), version: 2 };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const sy = getSetup().sy || 'backup';
+  triggerDownload(blob, `SF10-ES_${sy}_backup.json`);
+  showToast('JSON backup exported!');
+}
+
+function importBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.setup) fillSetup(data.setup);
+      if (data.students && Array.isArray(data.students)) {
+        students = data.students;
+        filteredStudents = [...students];
+        afterStudentsLoad();
+        if (students.length) selectStudent(0, true);
+      }
+      showToast(`Imported ${students.length} students from backup`);
+    } catch(err) {
+      showToast('Invalid JSON backup file','err');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ═══════════════════════════════════════════════════════
+// CSV UPLOAD
+// ═══════════════════════════════════════════════════════
+function loadCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  Papa.parse(file, {
+    header:true, skipEmptyLines:true,
+    complete: results => {
+      students = results.data.map((row, i) => {
+        const g = k => (row[k] || '').toString().trim();
+        const s = {
+          id: i,
+          lastName:   g('Last Name'),
+          firstName:  g('First Name'),
+          middleName: g('Middle Name'),
+          nameExtn:   g('Name Extn'),
+          lrn:        g('LRN'),
+          birthdate:  g('Birthdate'),
+          sex:        g('Sex'),
+          eligKinder: g('Kinder Progress Report').toUpperCase() === 'TRUE',
+          eligECCD:   g('ECCD Checklist').toUpperCase() === 'TRUE',
+          eligCert:   g('Kinder Certificate').toUpperCase() === 'TRUE',
+          notes:      '',
+          grades: {
+            gmrc:      [g('Q1_GMRC'),g('Q2_GMRC'),g('Q3_GMRC'),g('Q4_GMRC'),g('Final_GMRC'),g('Remarks_GMRC')],
+            reading:   [g('Q1_Reading'),g('Q2_Reading'),g('Q3_Reading'),g('Q4_Reading'),g('Final_Reading'),g('Remarks_Reading')],
+            language:  [g('Q1_Language'),g('Q2_Language'),g('Q3_Language'),g('Q4_Language'),g('Final_Language'),g('Remarks_Language')],
+            math:      [g('Q1_Math'),g('Q2_Math'),g('Q3_Math'),g('Q4_Math'),g('Final_Math'),g('Remarks_Math')],
+            makabansa: [g('Q1_Makabansa'),g('Q2_Makabansa'),g('Q3_Makabansa'),g('Q4_Makabansa'),g('Final_Makabansa'),g('Remarks_Makabansa')],
+            science:   [g('Q1_Science'),g('Q2_Science'),g('Q3_Science'),g('Q4_Science'),g('Final_Science'),g('Remarks_Science')],
+            ict:       [g('Q1_ICT'),g('Q2_ICT'),g('Q3_ICT'),g('Q4_ICT'),g('Final_ICT'),g('Remarks_ICT')],
+            mapeh:     [g('Q1_MAPEH'),g('Q2_MAPEH'),g('Q3_MAPEH'),g('Q4_MAPEH'),g('Final_MAPEH'),g('Remarks_MAPEH')],
+            music:     [g('Q1_Music'),g('Q2_Music'),g('Q3_Music'),g('Q4_Music'),g('Final_Music'),''],
+            arts:      [g('Q1_Arts'),g('Q2_Arts'),g('Q3_Arts'),g('Q4_Arts'),g('Final_Arts'),''],
+            pe:        [g('Q1_PE'),g('Q2_PE'),g('Q3_PE'),g('Q4_PE'),g('Final_PE'),''],
+            health:    [g('Q1_Health'),g('Q2_Health'),g('Q3_Health'),g('Q4_Health'),g('Final_Health'),''],
+            avg:       g('General_Average'),
+            avgRem:    g('Average_Remarks'),
+          }
+        };
+        s.status = computeStatus(s);
+        return s;
+      });
+      filteredStudents = [...students];
+      afterStudentsLoad();
+      if (students.length) selectStudent(0, true);
+      showToast(`Loaded ${students.length} students`);
+    },
+    error: e => showToast('CSV error: ' + e.message, 'err')
+  });
+  input.value = '';
+}
+
+function computeStatus(s) {
+  const avg = parseFloat(s.grades.avg);
+  if (!s.grades.avg) return 'incomplete';
+  const rem = (s.grades.avgRem || '').toUpperCase();
+  if (rem.includes('PROMOT')) return 'promoted';
+  if (avg >= 75) return 'promoted';
+  if (avg > 0 && avg < 75) return 'failed';
+  return 'incomplete';
+}
+
+function afterStudentsLoad() {
+  filteredStudents = applyFilter(students);
+  document.getElementById('studentBadge').textContent = students.length + ' students';
+  document.getElementById('studentBadge').className = 'badge badge-green';
+  document.getElementById('printAllBtn').disabled = students.length === 0;
+  updateStatCards();
+  renderStudentList();
+}
+
+// ═══════════════════════════════════════════════════════
+// STAT CARDS
+// ═══════════════════════════════════════════════════════
+function updateStatCards() {
+  const total = students.length;
+  const promoted = students.filter(s => s.status === 'promoted').length;
+  const failed = students.filter(s => s.status === 'failed').length;
+  const incomplete = students.filter(s => s.status === 'incomplete').length;
+  const avgs = students.map(s => parseFloat(s.grades.avg)).filter(n => !isNaN(n));
+  const classAvg = avgs.length ? (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1) : '—';
+
+  document.getElementById('sc-total').textContent = total;
+  document.getElementById('sc-promoted').textContent = promoted;
+  document.getElementById('sc-avg').textContent = classAvg;
+  document.getElementById('sc-failed').textContent = failed;
+
+  const pct = n => total ? Math.round(n/total*100) : 0;
+  const pp = pct(promoted), pi = pct(incomplete), pf = pct(failed);
+  document.getElementById('prog-p').style.width = pp + '%';
+  document.getElementById('prog-i').style.width = pi + '%';
+  document.getElementById('prog-f').style.width = pf + '%';
+  document.getElementById('prog-p-lbl').textContent = pp + '%';
+  document.getElementById('prog-i-lbl').textContent = pi + '%';
+  document.getElementById('prog-f-lbl').textContent = pf + '%';
+}
+
+// ═══════════════════════════════════════════════════════
+// STUDENT LIST
+// ═══════════════════════════════════════════════════════
+const AVATAR_COLORS = ['#1565C0','#7b3fa0','#27ae60','#d35400','#c0392b','#16a085','#2980b9','#8e44ad'];
+function avatarColor(name) { let h=0; for(let c of name) h = c.charCodeAt(0) + ((h<<5)-h); return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]; }
+
+function applyFilter(list) {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  return list.filter(s => {
+    const matchSearch = (s.lastName+s.firstName+s.lrn).toLowerCase().includes(q);
+    const matchFilter = activeFilter==='all' || s.status===activeFilter;
+    return matchSearch && matchFilter;
+  });
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filteredStudents = applyFilter(students);
+  renderStudentList();
+}
+
+function filterStudents() {
+  filteredStudents = applyFilter(students);
+  renderStudentList();
+}
+
+function renderStudentList() {
+  const el = document.getElementById('studentList');
+  const footer = document.getElementById('listFooter');
+  if (!filteredStudents.length) {
+    el.innerHTML = `<div class="empty-list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${students.length?'No results.':'Upload a CSV to get started.'}</div>`;
+    footer.textContent = '';
+    return;
+  }
+  const badgeMap = {promoted:`<span class="sitem-badge sbadge-p">✓ Pass</span>`,failed:`<span class="sitem-badge sbadge-f">⚠ Review</span>`,incomplete:`<span class="sitem-badge sbadge-i">⏳</span>`};
+  el.innerHTML = filteredStudents.map((s,i) => {
+    const initials = ((s.lastName[0]||'')+(s.firstName[0]||'')).toUpperCase();
+    const col = avatarColor(s.lastName+s.firstName);
+    return `<div class="sitem${s.id===selectedId?' active':''}" onclick="selectStudent(${i})">
+      <div class="savatar" style="background:${col}">${initials||'?'}</div>
+      <div class="sinfo">
+        <div class="sname">${s.lastName?s.lastName+', '+s.firstName:'(Unnamed)'}</div>
+        <div class="smeta">${s.lrn||'No LRN'} · ${s.sex||'–'}</div>
+      </div>
+      ${badgeMap[s.status]||''}
+    </div>`;
+  }).join('');
+  footer.textContent = `${filteredStudents.length} of ${students.length} students`;
+}
+
+function selectStudent(listIdx, skipScroll) {
+  const s = filteredStudents[listIdx];
+  if (!s) return;
+  selectedId = s.id;
+  renderStudentList();
+  const name = [s.lastName, s.firstName].filter(Boolean).join(', ') || 'Unnamed';
+  document.getElementById('previewName').textContent = name;
+  document.getElementById('printBtn').disabled = false;
+  document.getElementById('noteBtn').disabled = false;
+  renderForm([s]);
+}
+
+function refreshPreview() {
+  if (selectedId === null) { renderForm([null]); return; }
+  const s = students.find(x => x.id === selectedId) || null;
+  renderForm([s]);
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTES
+// ═══════════════════════════════════════════════════════
+function openNotes() {
+  const s = students.find(x => x.id === selectedId);
+  if (!s) return;
+  document.getElementById('notesStudentName').textContent = [s.lastName, s.firstName].filter(Boolean).join(', ');
+  document.getElementById('notesTextarea').value = s.notes || '';
+  document.getElementById('notesModal').classList.add('open');
+}
+function saveNotes() {
+  const s = students.find(x => x.id === selectedId);
+  if (!s) return;
+  s.notes = document.getElementById('notesTextarea').value;
+  closeModal('notesModal');
+  showToast('Notes saved');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+// STATS VIEW
+// ═══════════════════════════════════════════════════════
+const AREA_KEYS = ['gmrc','reading','language','math','makabansa','science','ict','mapeh'];
+const AREA_NAMES = {'gmrc':'GMRC/VE','reading':'Reading & Literacy','language':'Language','math':'Mathematics','makabansa':'Makabansa','science':'Science','ict':'ICT','mapeh':'MAPEH'};
+
+function buildStatsView() {
+  const el = document.getElementById('statsContent');
+  if (!students.length) { el.innerHTML = '<p style="color:var(--text3);font-size:13px">No students loaded yet.</p>'; return; }
+
+  // Per-subject average
+  const subjectCards = AREA_KEYS.map(key => {
+    const vals = students.map(s => parseFloat(s.grades[key]&&s.grades[key][4])).filter(n => !isNaN(n) && n > 0);
+    const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '—';
+    const color = avg >= 90 ? '#2ecc71' : avg >= 80 ? '#3498db' : avg >= 75 ? '#f39c12' : '#e74c3c';
+    const pct = avg !== '—' ? Math.min(100, Math.round((avg-60)/40*100)) : 0;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:130px;font-size:11px;color:var(--text2);flex-shrink:0">${AREA_NAMES[key]}</div>
+      <div style="flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .5s"></div>
+      </div>
+      <div style="width:36px;text-align:right;font-size:12px;font-weight:700;color:${color}">${avg}</div>
+    </div>`;
+  }).join('');
+
+  // Grade distribution
+  const avgs = students.map(s => parseFloat(s.grades.avg)).filter(n => !isNaN(n));
+  const dist = {'90–100':0,'85–89':0,'80–84':0,'75–79':0,'Below 75':0};
+  avgs.forEach(n => {
+    if(n>=90) dist['90–100']++;
+    else if(n>=85) dist['85–89']++;
+    else if(n>=80) dist['80–84']++;
+    else if(n>=75) dist['75–79']++;
+    else dist['Below 75']++;
+  });
+  const distColors = {'90–100':'#2ecc71','85–89':'#27ae60','80–84':'#3498db','75–79':'#f39c12','Below 75':'#e74c3c'};
+  const distBars = Object.entries(dist).map(([lbl,cnt]) => {
+    const pct = avgs.length ? Math.round(cnt/avgs.length*100) : 0;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="width:80px;font-size:11px;color:var(--text2)">${lbl}</div>
+      <div style="flex:1;height:22px;background:var(--surface3);border-radius:4px;overflow:hidden;position:relative">
+        <div style="width:${pct}%;height:100%;background:${distColors[lbl]};border-radius:4px;transition:width .5s"></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:rgba(255,255,255,.9)">${cnt} students (${pct}%)</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Top performers
+  const sorted = [...students].filter(s=>parseFloat(s.grades.avg)).sort((a,b)=>parseFloat(b.grades.avg)-parseFloat(a.grades.avg));
+  const topList = sorted.slice(0,5).map((s,i) => {
+    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;background:var(--surface3);margin-bottom:6px">
+      <span style="font-size:16px">${medals[i]}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600">${s.lastName}, ${s.firstName}</div>
+        <div style="font-size:10px;color:var(--text3)">${s.lrn||'No LRN'}</div>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:var(--gold)">${s.grades.avg}</div>
+    </div>`;
+  }).join('');
+
+  const card = (title, body) => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px">
+    <h3 style="font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text)">${title}</h3>${body}</div>`;
+
+  el.innerHTML = [
+    card('📚 Average per Subject Area', subjectCards),
+    card('📈 Grade Distribution', distBars),
+    card('🏆 Top Performers', topList || '<p style="color:var(--text3);font-size:12px">Add grade data to see rankings.</p>'),
+  ].join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// FORM BUILDER HELPERS
+// ═══════════════════════════════════════════════════════
+function gRow(label, data, isSub, noRem) {
+  const cls = 'ac' + (isSub ? ' sub' : '');
+  const g = data || ['','','','','',''];
+  const rc = noRem ? '<td></td>' : `<td class="rc"><input type="text" value="${g[5]||''}"></td>`;
+  return `<tr>
+    <td class="${cls}">${label}</td>
+    <td><input type="text" value="${g[0]||''}" maxlength="3"></td>
+    <td><input type="text" value="${g[1]||''}" maxlength="3"></td>
+    <td><input type="text" value="${g[2]||''}" maxlength="3"></td>
+    <td><input type="text" value="${g[3]||''}" maxlength="3"></td>
+    <td><input type="text" value="${g[4]||''}" maxlength="3"></td>
+    ${rc}
+  </tr>`;
+}
+
+function gradeTable(s, isG1) {
+  const gr = s && s.grades ? s.grades : {};
+  let rows = '';
+  if (isG1) {
+    rows += gRow('GMRC / VE', gr.gmrc);
+    rows += gRow('Reading and Literacy', gr.reading);
+    rows += gRow('Language', gr.language);
+    rows += gRow('Mathematics', gr.math);
+    rows += gRow('Makabansa / Araling Panlipunan', gr.makabansa);
+    rows += gRow('Science', gr.science);
+    rows += gRow('ICT', gr.ict);
+  } else {
+    rows += gRow('GMRC / VE', gr.gmrc);
+    rows += gRow('Filipino', null);
+    rows += gRow('English', null);
+    rows += gRow('Mathematics', gr.math);
+    rows += gRow('Makabansa / Araling Panlipunan', gr.makabansa);
+    rows += gRow('Science', gr.science);
+    rows += gRow('EPP / TLE', null);
+  }
+  rows += gRow('MAPEH', gr.mapeh);
+  rows += gRow('Music', gr.music, true, true);
+  rows += gRow('Arts', gr.arts, true, true);
+  rows += gRow('Physical Education', gr.pe, true, true);
+  rows += gRow('Health', gr.health, true, true);
+
+  const avg = gr.avg || '';
+  const avgR = gr.avgRem || '';
+  rows += `<tr class="avg"><td class="ac" style="font-weight:bold">General Average</td><td colspan="4"></td>
+    <td class="computed"><input type="text" value="${avg}" maxlength="3" style="font-weight:bold;color:#0050a0"></td>
+    <td class="rc"><input type="text" value="${avgR}"></td></tr>`;
+
+  return `<table class="sf-gt">
+    <colgroup><col style="width:33%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:26%"></colgroup>
+    <thead>
+      <tr><th rowspan="2">LEARNING AREAS</th><th colspan="4">Quarterly Rating</th><th rowspan="2">Final<br>Rating</th><th rowspan="2">Remarks</th></tr>
+      <tr><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function remedialBlock() {
+  return `<div class="sf-rem">
+    <div class="sf-rem-hdr">Remedial Classes
+      <div class="rd">Conducted from: <input type="text" placeholder="mm/dd/yyyy"> &nbsp;to&nbsp; <input type="text" placeholder="mm/dd/yyyy"></div>
+    </div>
+    <table class="sf-rt">
+      <colgroup><col style="width:34%"><col style="width:14%"><col style="width:18%"><col style="width:18%"><col style="width:16%"></colgroup>
+      <thead><tr><th>Learning Areas</th><th>Final Rating</th><th>Remedial Class</th><th>Recomputed Final</th><th>Remarks</th></tr></thead>
+      <tbody>${[0,1].map(()=>`<tr><td><input type="text"></td><td><input type="text" maxlength="3"></td><td><input type="text" maxlength="3"></td><td><input type="text" maxlength="3"></td><td><input type="text"></td></tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+function metaBlock(st, prefill) {
+  const v = k => prefill ? (st[k]||'') : '';
+  return `<div class="sf-mlines">
+    <div class="sf-mline">
+      <div class="sf-mf" style="flex:2"><label>School:</label><input type="text" value="${v('school')}" style="width:130px"></div>
+      <div class="sf-mf"><label>School ID:</label><input type="text" value="${v('schoolid')}" style="width:50px"></div>
+    </div>
+    <div class="sf-mline">
+      <div class="sf-mf"><label>District:</label><input type="text" value="${v('district')}" style="width:65px"></div>
+      <div class="sf-mf"><label>Division:</label><input type="text" value="${v('division')}" style="width:65px"></div>
+      <div class="sf-mf"><label>Region:</label><input type="text" value="${v('region')}" style="width:45px"></div>
+    </div>
+    <div class="sf-mline">
+      <div class="sf-mf"><label>Classified as Grade:</label><input type="text" value="${v('grade')}" style="width:18px"></div>
+      <div class="sf-mf"><label>Section:</label><input type="text" value="${v('section')}" style="width:60px"></div>
+      <div class="sf-mf"><label>School Year:</label><input type="text" value="${v('sy')}" style="width:55px"></div>
+    </div>
+    <div class="sf-mline">
+      <div class="sf-mf" style="flex:1"><label>Name of Adviser/Teacher:</label><input type="text" value="${v('teacher')}" style="width:120px"></div>
+      <div class="sf-mf"><label>Signature:</label><input type="text" style="width:65px"></div>
+    </div>
+  </div>`;
+}
+
+function scholBlock(s, isG1, prefillMeta) {
+  const st = getSetup();
+  return `<div class="sf-block">${metaBlock(st, prefillMeta)}${gradeTable(s, isG1)}${remedialBlock()}</div>`;
+}
+function emptyBlock(isG1) { return scholBlock(null, isG1, false); }
+
+function certBox() {
+  return `<div class="sf-cert-box">
+    <div class="sf-cert-title">CERTIFICATION</div>
+    <div class="sf-cert-body">I CERTIFY that this is a true record of
+      <input type="text" style="width:130px" placeholder="Learner's Name">
+      with LRN <input type="text" style="width:95px" placeholder="LRN">
+      and that he/she is eligible for admission to Grade
+      <input type="text" style="width:25px">.
+    </div>
+    <div class="sf-cert-srow">
+      <div class="sf-csf" style="flex:2"><label>School Name:</label><input type="text"></div>
+      <div class="sf-csf"><label>School ID:</label><input type="text" style="width:50px"></div>
+      <div class="sf-csf"><label>Division:</label><input type="text"></div>
+      <div class="sf-csf"><label>Last SY Attended:</label><input type="text" style="width:52px"></div>
+    </div>
+    <div class="sf-sig-row">
+      <div class="sf-sigline">Date</div>
+      <div class="sf-sigline">Name of Principal/School Head over Printed Name</div>
+      <div class="sf-seal-placeholder">(Affix School Seal here)</div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// LOGOS
+// ═══════════════════════════════════════════════════════
+const L_SEAL = `<img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Department_of_Education.svg" style="width:66px;height:66px;object-fit:contain" alt="DepEd Seal">`;
+const L_DEPED = `<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEgE6aoDF-vnPZ9SRcASJYTEZIzj8IZMP09A&s" style="width:66px;height:66px;object-fit:contain" alt="DepEd Logo">`;
+
+// ═══════════════════════════════════════════════════════
+// MAIN PAGE BUILDER
+// ═══════════════════════════════════════════════════════
+function buildPages(s) {
+  const v = val => val || '';
+  const st = getSetup();
+
+  const page1 = `<div class="sf10-page">
+    <div class="sf-form-id">SF10-ES</div>
+    <div class="sf-header">
+      <div class="sf-seal-box">${L_SEAL}</div>
+      <div class="sf-header-center">
+        <div class="rep">Republic of the Philippines</div>
+        <div class="dept">Department of Education</div>
+        <div class="title">Learner Permanent Record for Elementary School (SF10-ES)</div>
+        <div class="sub">(Formerly Form 137)</div>
+      </div>
+      <div class="sf-logo-box">${L_DEPED}</div>
+    </div>
+
+    <div class="sf-band">LEARNER'S PERSONAL INFORMATION</div>
+    <div class="sf-info-box">
+      <div class="sf-info-row">
+        <div class="sf-ic" style="flex:1.8"><label>LAST NAME:</label><input type="text" value="${v(s&&s.lastName)}" style="font-weight:bold;font-size:9pt"></div>
+        <div class="sf-ic" style="flex:1.8"><label>FIRST NAME:</label><input type="text" value="${v(s&&s.firstName)}" style="font-weight:bold;font-size:9pt"></div>
+        <div class="sf-ic" style="flex:.65"><label>NAME EXTN. (Jr,I,II):</label><input type="text" value="${v(s&&s.nameExtn)}"></div>
+        <div class="sf-ic" style="flex:1.2"><label>MIDDLE NAME:</label><input type="text" value="${v(s&&s.middleName)}" style="font-weight:bold"></div>
+      </div>
+      <div class="sf-info-row">
+        <div class="sf-ic" style="flex:1.5"><label>Learner Reference Number (LRN):</label><input type="text" value="${v(s&&s.lrn)}" style="font-family:monospace;letter-spacing:1px"></div>
+        <div class="sf-ic" style="flex:1"><label>Birthdate (mm/dd/yyyy):</label><input type="text" value="${v(s&&s.birthdate)}"></div>
+        <div class="sf-ic" style="flex:.32"><label>Sex:</label><input type="text" value="${v(s&&s.sex)}"></div>
+      </div>
+    </div>
+
+    <div class="sf-band">ELIGIBILITY FOR ELEMENTARY SCHOOL ENROLMENT</div>
+    <div class="sf-elig-box">
+      <div class="sf-elig-top">
+        <em>Credential Presented for Grade 1:</em>
+        <label class="sf-ck"><input type="checkbox" ${(s&&s.eligKinder)?'checked':''}> Kinder Progress Report</label>
+        <label class="sf-ck"><input type="checkbox" ${(s&&s.eligECCD)?'checked':''}> ECCD Checklist</label>
+        <label class="sf-ck"><input type="checkbox" ${(s&&s.eligCert)?'checked':''}> Kindergarten Certificate of Completion</label>
+      </div>
+      <div class="sf-elig-row2">
+        <div class="sf-ef" style="flex:2"><label>Name of School:</label><input type="text" value="${st.school}"></div>
+        <div class="sf-ef"><label>School ID:</label><input type="text" value="${st.schoolid}" style="width:55px"></div>
+        <div class="sf-ef" style="flex:2.5"><label>Address of School:</label><input type="text" value="${st.addr}"></div>
+      </div>
+      <div class="sf-elig-other">
+        <div class="o-row">
+          <span style="font-size:6.5pt">Other Credential Presented</span>
+          <label class="sf-ck"><input type="checkbox"> PEPT Passer</label>
+          <div class="o-f"><label>Rating:</label><input type="text" style="width:38px"></div>
+          <div class="o-f"><label>Date of Exam/Assessment:</label><input type="text" style="width:80px"></div>
+          <label class="sf-ck"><input type="checkbox"> Others:</label>
+          <input type="text" style="border:none;border-bottom:1px solid #aaa;width:100px;font-size:6.5pt;background:transparent;outline:none;font-family:'Arial Narrow',Arial,sans-serif">
+        </div>
+        <div class="o-row">
+          <div class="o-f"><label>Name & Address of Testing Center:</label><input type="text" style="width:160px"></div>
+          <div class="o-f"><label>Remark:</label><input type="text" style="width:120px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sf-band schol-band">SCHOLASTIC RECORD</div>
+
+    <div class="sf-schol-grid">
+      <div class="sf-col">${scholBlock(s, true, true)}</div>
+      <div class="sf-col">${emptyBlock(true)}</div>
+    </div>
+    <div class="sf-schol-grid">
+      <div class="sf-col">${emptyBlock(false)}</div>
+      <div class="sf-col">${emptyBlock(false)}</div>
+    </div>
+
+    <div class="sf-footer"><span></span><span>SFRT 2017</span></div>
+  </div>`;
+
+  const page2 = `<div class="sf10-page">
+    <div class="sf-form-id r">SF10-ES &nbsp;&nbsp; Page 2 of</div>
+    <div class="sf-band schol-band" style="margin-top:2px">SCHOLASTIC RECORD</div>
+    <div class="sf-schol-grid">
+      <div class="sf-col">${emptyBlock(false)}</div>
+      <div class="sf-col">${emptyBlock(false)}</div>
+    </div>
+    <div class="sf-schol-grid">
+      <div class="sf-col">${emptyBlock(false)}</div>
+      <div class="sf-col">${emptyBlock(false)}</div>
+    </div>
+    <div class="sf-cert-section">
+      <div class="sf-cert-lbl"><em>For Transfer Out / Elementary School Completer Only</em></div>
+      ${certBox()}${certBox()}${certBox()}
+      <div style="font-size:5.5pt;color:#888;margin-top:2px">May add Certification Box if needed</div>
+    </div>
+    <div class="sf-footer"><span></span><span>SFRT Revised 2017</span></div>
+  </div>`;
+
+  return page1 + page2;
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderForm(studentArray) {
+  document.getElementById('previewCanvas').innerHTML = studentArray.map(s => buildPages(s)).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// PRINT
+// ═══════════════════════════════════════════════════════
+function printCurrent() { window.print(); }
+function printAll() {
+  if (!students.length) return;
+  document.getElementById('previewCanvas').innerHTML = students.map(s => buildPages(s)).join('');
+  document.getElementById('previewName').textContent = 'ALL STUDENTS — BATCH PRINT';
+  setTimeout(() => window.print(), 500);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+loadSetupFromStorage();
+renderForm([null]);
+</script>
+</body>
+</html>

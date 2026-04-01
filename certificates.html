@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DepEd Academic Awards Generator v1</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700;800&family=Great+Vibes&family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════════ */
+:root {
+  --navy: #0a1a3e; --blue: #1a3a7c; --gold: #c8a84b;
+  --panel: #f0f4f8; --border: #d0dae8; --text: #1a2340; --muted: #5a6a85;
+  --cert-w-mm: 297; --cert-h-mm: 210;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Montserrat', sans-serif; background: #dde4ef; color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ═══ HEADER ═══ */
+header { background: var(--navy); color: #fff; padding: 0 16px; height: 50px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 14px rgba(0,0,0,.4); z-index: 20; }
+header h1 { font-size: 12px; font-weight: 700; letter-spacing: .4px; }
+header h1 span { color: var(--gold); }
+.hbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { padding: 5px 12px; border-radius: 5px; font-family: 'Montserrat',sans-serif; font-size: 10.5px; font-weight: 600; cursor: pointer; border: none; transition: all .18s; white-space: nowrap; }
+.btn-primary { background: var(--gold); color: var(--navy); }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-sec { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.22); }
+.btn-sec:hover { background: rgba(255,255,255,.24); }
+.btn-sm { padding: 4px 9px; font-size: 10px; }
+
+/* ═══ LAYOUT ═══ */
+.app-body { display: flex; flex: 1; overflow: hidden; }
+
+/* ═══ LEFT PANEL ═══ */
+.panel { width: 320px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+.panel::-webkit-scrollbar { width: 4px; } .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.tabs { display: flex; background: var(--navy); flex-shrink: 0; }
+.tab { flex: 1; padding: 8px 2px; text-align: center; font-size: 9.5px; font-weight: 600; color: rgba(255,255,255,.4); cursor: pointer; border-bottom: 3px solid transparent; transition: all .18s; }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.tcontent { display: none; flex-direction: column; }
+.tcontent.active { display: flex; }
+
+.sec { border-bottom: 1px solid var(--border); padding: 11px 13px; }
+.sec-title { font-size: 8.5px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 9px; }
+
+lbl, .lbl { display: block; font-size: 9.5px; font-weight: 600; color: var(--muted); margin-bottom: 3px; margin-top: 7px; }
+.lbl:first-child { margin-top: 0; }
+input[type=text], input[type=number], select, textarea {
+  width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px;
+  font-family: 'Montserrat',sans-serif; font-size: 10.5px; background: #fff; color: var(--text); transition: border-color .18s;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
+textarea { resize: vertical; min-height: 48px; line-height: 1.4; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+.info { font-size: 8.5px; color: var(--muted); margin-top: 4px; }
+
+.upload-btn { display: flex; align-items: center; gap: 7px; padding: 6px 9px; border: 1.5px dashed var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 9.5px; color: var(--muted); transition: all .18s; width: 100%; }
+.upload-btn:hover { border-color: var(--blue); color: var(--blue); }
+.upload-btn input { display: none; }
+.lprev { width: 26px; height: 26px; object-fit: contain; border-radius: 3px; }
+
+.sig-row { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 7px; margin-bottom: 5px; }
+.sig-top { display: flex; gap: 5px; }
+.sig-top .sf { flex: 1; }
+.sig-top input { margin-bottom: 3px; }
+.del-btn { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 13px; padding: 2px 3px; flex-shrink: 0; }
+.add-btn { background: none; border: 1.5px dashed var(--border); border-radius: 4px; padding: 5px; width: 100%; color: var(--blue); font-size: 9.5px; font-weight: 600; cursor: pointer; transition: all .18s; }
+.add-btn:hover { background: #e8f0fe; }
+
+/* Position sliders */
+.slider-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.slider-lbl { font-size: 9px; color: var(--muted); font-weight: 600; min-width: 36px; }
+.slider-val { font-size: 9px; color: var(--blue); font-weight: 700; min-width: 28px; text-align: right; }
+input[type=range] { flex: 1; cursor: pointer; accent-color: var(--blue); height: 3px; }
+
+/* Element card for layout editor */
+.el-card { background: #fff; border: 1px solid var(--border); border-radius: 5px; padding: 8px; margin-bottom: 6px; }
+.el-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.el-card-title { font-size: 9.5px; font-weight: 700; color: var(--text); }
+.el-card-toggle { width: 28px; height: 15px; background: var(--border); border-radius: 8px; cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0; }
+.el-card-toggle.on { background: var(--blue); }
+.el-card-toggle::after { content:''; position: absolute; left: 2px; top: 2px; width: 11px; height: 11px; background: #fff; border-radius: 50%; transition: left .2s; }
+.el-card-toggle.on::after { left: 15px; }
+
+/* CSV table */
+#studentTable { width: 100%; border-collapse: collapse; font-size: 9.5px; }
+#studentTable th { background: var(--navy); color: #fff; padding: 4px 6px; text-align: left; font-size: 9px; }
+#studentTable td { padding: 3px 6px; border-bottom: 1px solid var(--border); }
+#studentTable tr:nth-child(even) td { background: #f7f9fc; }
+#studentTable tr:hover td { background: #e8f0fe; cursor: pointer; }
+.hbadge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 8.5px; font-weight: 700; }
+.hbadge-hh { background: #fff3cd; color: #856404; }
+.hbadge-h  { background: #e9e9f5; color: #4a4a7a; }
+.hbadge-wh { background: #cfe2ff; color: #084298; }
+
+/* Design variant selector */
+.variant-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.variant-card { border: 2px solid var(--border); border-radius: 6px; padding: 8px 6px; text-align: center; cursor: pointer; transition: all .18s; background: #fff; }
+.variant-card:hover { border-color: var(--blue); }
+.variant-card.selected { border-color: var(--gold); background: #fffbf0; }
+.variant-thumb { width: 100%; height: 45px; border-radius: 3px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.variant-name { font-size: 9px; font-weight: 700; color: var(--text); }
+
+/* ═══ PREVIEW AREA ═══ */
+.preview-area { flex: 1; overflow: auto; background: #b4c0d4; display: flex; flex-direction: column; align-items: center; padding: 14px; gap: 12px; }
+.preview-area::-webkit-scrollbar { width: 6px; } .preview-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 3px; }
+.prev-toolbar { display: flex; gap: 7px; align-items: center; flex-shrink: 0; flex-wrap: wrap; justify-content: center; }
+.zoom-lbl { font-size: 10px; color: #fff; font-weight: 600; background: rgba(0,0,0,.2); padding: 3px 8px; border-radius: 3px; }
+
+/* ═══════════════════════════════════════════
+   CERTIFICATE WRAPPER
+═══════════════════════════════════════════ */
+.cert-wrapper { transform-origin: top center; flex-shrink: 0; position: relative; }
+
+/* A4 LANDSCAPE cert */
+.cert {
+  width: 297mm; height: 210mm;
+  background: #ffffff;
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,.35);
+  /* font set per design */
+}
+
+/* LEGAL DUAL — Legal PORTRAIT (8.5"×14") = 216mm wide × 356mm tall
+   Two A4-LANDSCAPE certs (297×210mm each) stacked TOP and BOTTOM.
+   Each cert slot = 216mm wide × 178mm tall.
+   CSS scale = 216/297 ≈ 0.7273 → cert renders as 216×152.7mm, centered vertically in its slot. */
+.dual-wrapper { transform-origin: top center; flex-shrink: 0; }
+.legal-paper {
+  width: 216mm;
+  height: 356mm;
+  background: #e8e8e8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,.35);
+  overflow: hidden;
+}
+/* Top and bottom cert slots */
+.cert-half {
+  width: 216mm;
+  height: 178mm;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+}
+/* Full A4 landscape cert scaled to fill the slot width */
+.cert-half .cert {
+  width: 297mm !important;
+  height: 210mm !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,.2) !important;
+  transform: scale(0.7273);
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+.legal-divider { height: 1px; width: 100%; background: #aaa; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════
+   CERTIFICATE ELEMENTS — POSITIONED ABSOLUTE
+   All in mm units mapped via CSS custom props
+═══════════════════════════════════════════ */
+
+/* LEFT BORDER */
+.c-border-left { position: absolute; left: 0; top: 0; width: var(--bl-w, 68px); height: 100%; }
+.c-border-right { position: absolute; right: 0; top: 0; width: var(--br-w, 48px); height: 100%; }
+.c-svg { width: 100%; height: 100%; }
+
+/* LOGOS */
+.c-logo-left    { position: absolute; object-fit: contain; }
+.c-logo-rtop    { position: absolute; object-fit: contain; }
+.c-logo-rmid    { position: absolute; object-fit: contain; }
+.c-watermark    { position: absolute; opacity: .1; object-fit: contain; pointer-events: none; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+/* HEADER */
+.c-header { position: absolute; text-align: center; }
+.c-hdr-line { line-height: 1.55; }
+.c-school-name { font-weight: 700; }
+.c-school-addr { }
+
+/* AWARD TITLE */
+.c-title { position: absolute; text-align: center; }
+
+/* GIVEN TO */
+.c-given-to { position: absolute; text-align: center; font-style: italic; }
+
+/* RECIPIENT */
+.c-recipient-wrap { position: absolute; text-align: center; }
+.c-recipient { display: inline-block; font-weight: 700; border-bottom: 2px solid; min-width: 200px; line-height: 1.2; padding-bottom: 1mm; }
+
+/* DETAIL LINES */
+.c-details { position: absolute; }
+.c-det-line { display: flex; align-items: baseline; gap: 3px; flex-wrap: wrap; justify-content: center; line-height: 1.9; }
+.c-blank { border-bottom: 1.5px solid #222; min-width: 70px; display: inline-block; text-align: center; font-weight: 700; }
+.c-honor { font-weight: 700; font-style: italic; border-bottom: 1.5px solid; }
+.c-quarter { font-weight: 700; text-decoration: underline; }
+.c-sy { border-bottom: 1.5px solid #222; min-width: 55px; display: inline-block; text-align: center; font-weight: 700; }
+
+/* DEPED ORDER */
+.c-order { position: absolute; text-align: center; }
+
+/* DATE LINE */
+.c-date { position: absolute; text-align: center; font-style: italic; }
+.c-date-day { border-bottom: 1.5px solid; min-width: 22px; display: inline-block; text-align: center; font-style: normal; }
+.c-date-my { font-weight: 700; border-bottom: 1.5px solid; font-style: normal; }
+
+/* SIGNATORIES */
+.c-sigs { position: absolute; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 4mm; }
+.c-sig-block { text-align: center; }
+.c-sig-img { display: block; margin: 0 auto 1px; object-fit: contain; }
+.c-sig-name { font-weight: 700; border-top: 1.5px solid; padding-top: 2px; }
+.c-sig-pos { font-style: italic; margin-top: 1px; }
+
+/* BOTTOM LOGOS */
+.c-bottom-logos { position: absolute; display: flex; gap: 7px; align-items: center; }
+.c-bottom-logos img { height: 26px; object-fit: contain; }
+
+/* HONOR COLORS */
+.hc-hh { color: #8B6914 !important; border-color: #8B6914 !important; }
+.hc-h  { color: #5a5a7a !important; border-color: #5a5a7a !important; }
+.hc-wh { color: #084298 !important; border-color: #084298 !important; }
+.hc-red { color: #900 !important; border-color: #900 !important; }
+
+/* ═══ SPINNER ═══ */
+.spinner-ov { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: #fff; font-weight: 600; font-size: 12px; }
+.spinner-ov.show { display: flex; }
+.spin { width: 38px; height: 38px; border: 4px solid rgba(255,255,255,.2); border-top-color: var(--gold); border-radius: 50%; animation: spin .75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#spin-prog { font-size: 11px; color: rgba(255,255,255,.7); }
+
+/* ═══ PRINT ═══ */
+@media print {
+  body, html { margin: 0; padding: 0; background: none; }
+  header, .panel, .prev-toolbar { display: none !important; }
+  .preview-area { padding: 0; background: none; overflow: visible; display: block; }
+  .cert-wrapper, .dual-wrapper { transform: none !important; width: auto !important; height: auto !important; }
+  .cert, .legal-paper { box-shadow: none; page-break-after: always; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<header>
+  <h1>DepEd <span>Academic Awards</span> Generator &mdash; v1 Pro</h1>
+  <div class="hbtns">
+    <button class="btn btn-sec btn-sm" onclick="printCurrent()">🖨 Print</button>
+    <button class="btn btn-sec btn-sm" onclick="downloadSinglePDF()">⬇ PDF</button>
+    <button class="btn btn-sec btn-sm" onclick="downloadDualLegal()">📄 Dual (Legal)</button>
+    <button class="btn btn-primary btn-sm" onclick="bulkGenerate()">⚡ Bulk CSV→PDF</button>
+  </div>
+</header>
+
+<div class="app-body">
+<!-- ══════ CONTROL PANEL ══════ -->
+<div class="panel">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('design')">🎨 Design</div>
+    <div class="tab" onclick="switchTab('content')">✏️ Content</div>
+    <div class="tab" onclick="switchTab('layout')">📐 Layout</div>
+    <div class="tab" onclick="switchTab('bulk')">📋 Bulk</div>
+  </div>
+
+  <!-- ── TAB: DESIGN ── -->
+  <div class="tcontent active" id="tab-design">
+
+    <div class="sec">
+      <div class="sec-title">Certificate Template / Variant</div>
+      <div class="variant-grid">
+        <div class="variant-card selected" onclick="setDesign('matatag')" id="dv-matatag">
+          <div class="variant-thumb" style="background:linear-gradient(135deg,#0a1a3e 40%,#1a3a7c);position:relative;overflow:hidden;">
+            <div style="position:absolute;left:0;top:0;width:18px;height:100%;background:#0a1a3e;"></div>
+            <div style="font-size:22px;">📜</div>
+          </div>
+          <div class="variant-name">MATATAG Classic</div>
+        </div>
+        <div class="variant-card" onclick="setDesign('gold')" id="dv-gold">
+          <div class="variant-thumb" style="background:linear-gradient(135deg,#2c1810,#8B6914);"><div style="font-size:22px;">🏅</div></div>
+          <div class="variant-name">Gold Prestige</div>
+        </div>
+        <div class="variant-card" onclick="setDesign('green')" id="dv-green">
+          <div class="variant-thumb" style="background:linear-gradient(135deg,#0a3e1a,#1a7c3a);"><div style="font-size:22px;">🌿</div></div>
+          <div class="variant-name">Emerald Classic</div>
+        </div>
+        <div class="variant-card" onclick="setDesign('red')" id="dv-red">
+          <div class="variant-thumb" style="background:linear-gradient(135deg,#3e0a0a,#9c2a2a);"><div style="font-size:22px;">🎗️</div></div>
+          <div class="variant-name">Crimson Honor</div>
+        </div>
+        <div class="variant-card" onclick="setDesign('minimal')" id="dv-minimal">
+          <div class="variant-thumb" style="background:#f8f8f8;border:1px solid #ddd;"><div style="font-size:22px;">◻️</div></div>
+          <div class="variant-name">Clean Minimal</div>
+        </div>
+        <div class="variant-card" onclick="setDesign('royal')" id="dv-royal">
+          <div class="variant-thumb" style="background:linear-gradient(135deg,#1a0a3e,#4a1a7c);"><div style="font-size:22px;">👑</div></div>
+          <div class="variant-name">Royal Purple</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Logos & Images</div>
+      <div class="row3" style="margin-bottom:7px;">
+        <div>
+          <div style="font-size:8.5px;color:var(--muted);font-weight:700;margin-bottom:3px;">LEFT</div>
+          <label class="upload-btn" style="flex-direction:column;gap:3px;text-align:center;padding:5px;">
+            <input type="file" accept="image/*" onchange="loadLogo(this,'left')">
+            <img id="prev-left" class="lprev" src="" style="display:none;margin:0 auto;">
+            <span id="lbl-left" style="font-size:8px;">Upload</span>
+          </label>
+        </div>
+        <div>
+          <div style="font-size:8.5px;color:var(--muted);font-weight:700;margin-bottom:3px;">RIGHT TOP</div>
+          <label class="upload-btn" style="flex-direction:column;gap:3px;text-align:center;padding:5px;">
+            <input type="file" accept="image/*" onchange="loadLogo(this,'rtop')">
+            <img id="prev-rtop" class="lprev" src="" style="display:none;margin:0 auto;">
+            <span id="lbl-rtop" style="font-size:8px;">Upload</span>
+          </label>
+        </div>
+        <div>
+          <div style="font-size:8.5px;color:var(--muted);font-weight:700;margin-bottom:3px;">RIGHT MID</div>
+          <label class="upload-btn" style="flex-direction:column;gap:3px;text-align:center;padding:5px;">
+            <input type="file" accept="image/*" onchange="loadLogo(this,'rmid')">
+            <img id="prev-rmid" class="lprev" src="" style="display:none;margin:0 auto;">
+            <span id="lbl-rmid" style="font-size:8px;">Upload</span>
+          </label>
+        </div>
+      </div>
+      <div style="margin-bottom:5px;">
+        <div style="font-size:8.5px;color:var(--muted);font-weight:700;margin-bottom:3px;">CENTER WATERMARK (School Seal)</div>
+        <label class="upload-btn">
+          <input type="file" accept="image/*" onchange="loadLogo(this,'wm')">
+          <img id="prev-wm" class="lprev" src="" style="display:none;">
+          <span id="lbl-wm" style="font-size:9px;">Upload Watermark</span>
+        </label>
+      </div>
+      <div>
+        <div style="font-size:8.5px;color:var(--muted);font-weight:700;margin-bottom:3px;">BOTTOM LOGOS ROW (DepEd, Bagong Pilipinas…)</div>
+        <label class="upload-btn">
+          <input type="file" accept="image/*" multiple onchange="loadBottomLogos(this)">
+          <span style="font-size:9px;">Upload up to 3 logos</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Typography</div>
+      <div class="lbl">Award Title Font</div>
+      <select id="font-title" onchange="up()">
+        <option value="'Playfair Display',serif">Playfair Display (Default)</option>
+        <option value="'Cinzel',serif">Cinzel (Roman)</option>
+        <option value="'IM Fell English',serif">IM Fell English</option>
+        <option value="'Great Vibes',cursive">Great Vibes (Script)</option>
+        <option value="'Libre Baskerville',serif">Libre Baskerville</option>
+        <option value="'Montserrat',sans-serif">Montserrat</option>
+      </select>
+      <div class="lbl">Body / Details Font</div>
+      <select id="font-body" onchange="up()">
+        <option value="'Libre Baskerville',serif">Libre Baskerville (Default)</option>
+        <option value="'Playfair Display',serif">Playfair Display</option>
+        <option value="'IM Fell English',serif">IM Fell English</option>
+        <option value="'Montserrat',sans-serif">Montserrat</option>
+        <option value="'Cinzel',serif">Cinzel</option>
+      </select>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Signatories</div>
+      <div id="sig-container"></div>
+      <button class="add-btn" onclick="addSig()">+ Add Signatory</button>
+    </div>
+
+  </div><!-- /tab-design -->
+
+  <!-- ── TAB: CONTENT ── -->
+  <div class="tcontent" id="tab-content">
+
+    <div class="sec">
+      <div class="sec-title">Institution Header</div>
+      <div class="lbl">Line 1</div>
+      <input type="text" id="hdr1" value="Republic of the Philippines" oninput="up()">
+      <div class="lbl">Line 2</div>
+      <input type="text" id="hdr2" value="Department of Education" oninput="up()">
+      <div class="lbl">Line 3</div>
+      <input type="text" id="hdr3" value="Region V - Bicol" oninput="up()">
+      <div class="lbl">Line 4</div>
+      <input type="text" id="hdr4" value="Schools Division of Camarines Norte" oninput="up()">
+      <div class="lbl">School Name (Bold)</div>
+      <input type="text" id="schoolName" value="MORENO INTEGRATED SCHOOL" oninput="up()">
+      <div class="lbl">School Address</div>
+      <input type="text" id="schoolAddr" value="Gov. Panotes Ave., Daet, Camarines Norte" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Award Title & Reference</div>
+      <div class="lbl">Award Title Text</div>
+      <input type="text" id="awardTitle" value="ACADEMIC EXCELLENCE AWARD" oninput="up()">
+      <div class="lbl">"is given to" label</div>
+      <input type="text" id="givenToText" value="is given to" oninput="up()">
+      <div class="lbl">DepEd Order / Reference Line</div>
+      <input type="text" id="depedOrder" value="per DepEd. Order No. 36, s. 2016" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recipient Details</div>
+      <div class="lbl">Student Name</div>
+      <input type="text" id="studentName" value="Juan Dela Cruz" oninput="up()">
+      <div class="lbl">Pronoun</div>
+      <select id="gender" onchange="up()">
+        <option value="his">Male — his</option>
+        <option value="her">Female — her</option>
+        <option value="their">Non-binary — their</option>
+      </select>
+      <div class="lbl">Section / Grade</div>
+      <input type="text" id="section" value="Grade 3 - Fair" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Academic Classification</div>
+      <div class="lbl">Honor Level</div>
+      <select id="honorLevel" onchange="up()">
+        <option value="With Highest Honors">With Highest Honors</option>
+        <option value="With High Honors">With High Honors</option>
+        <option value="With Honors" selected>With Honors</option>
+      </select>
+      <div class="lbl">Quarter</div>
+      <select id="quarter" onchange="up()">
+        <option>FIRST QUARTER</option>
+        <option selected>SECOND QUARTER</option>
+        <option>THIRD QUARTER</option>
+        <option>FOURTH QUARTER</option>
+      </select>
+      <div class="lbl">School Year</div>
+      <input type="text" id="schoolYear" value="2025-2026" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Date & Venue</div>
+      <div class="row2">
+        <div>
+          <div class="lbl">Day</div>
+          <input type="text" id="certDay" value="" placeholder="blank=line" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Month &amp; Year</div>
+          <input type="text" id="certMonthYear" value="November 2025" oninput="up()">
+        </div>
+      </div>
+      <div class="lbl">Venue (in date line)</div>
+      <input type="text" id="venue" value="Moreno Integrated School, Daet, Camarines Norte" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Custom Body Text Override</div>
+      <div class="info" style="margin-bottom:5px;">Overrides the "of [section] for [pronoun] commendable…" line with free text.</div>
+      <textarea id="customBody" rows="3" placeholder="Leave blank to use default layout…" oninput="up()"></textarea>
+    </div>
+
+  </div><!-- /tab-content -->
+
+  <!-- ── TAB: LAYOUT ── -->
+  <div class="tcontent" id="tab-layout">
+
+    <div class="sec">
+      <div class="sec-title">Element Visibility & Position</div>
+      <div class="info" style="margin-bottom:8px;">Toggle elements on/off and drag sliders to reposition them (in mm from top/left of certificate).</div>
+
+      <!-- Each element control -->
+      <div id="layout-cards"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Font Sizes (pt)</div>
+      <div class="lbl">Header Lines</div>
+      <input type="number" id="fs-header" value="8.5" min="5" max="16" step=".5" oninput="up()">
+      <div class="lbl">School Name</div>
+      <input type="number" id="fs-school" value="12" min="6" max="22" step=".5" oninput="up()">
+      <div class="lbl">Award Title</div>
+      <input type="number" id="fs-title" value="30" min="12" max="56" step="1" oninput="up()">
+      <div class="lbl">Recipient Name</div>
+      <input type="number" id="fs-recipient" value="22" min="10" max="48" step="1" oninput="up()">
+      <div class="lbl">Detail Lines</div>
+      <input type="number" id="fs-details" value="9" min="6" max="18" step=".5" oninput="up()">
+      <div class="lbl">Signatory Name</div>
+      <input type="number" id="fs-sig" value="9" min="6" max="16" step=".5" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Border Width</div>
+      <div class="lbl">Left Border (px)</div>
+      <input type="number" id="border-left-w" value="68" min="0" max="140" oninput="up()">
+      <div class="lbl">Right Border (px)</div>
+      <input type="number" id="border-right-w" value="48" min="0" max="140" oninput="up()">
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Logo Sizes (px)</div>
+      <div class="row3">
+        <div><div class="lbl">Left</div><input type="number" id="ls-left" value="46" min="20" max="100" oninput="up()"></div>
+        <div><div class="lbl">R-Top</div><input type="number" id="ls-rtop" value="46" min="20" max="100" oninput="up()"></div>
+        <div><div class="lbl">R-Mid</div><input type="number" id="ls-rmid" value="50" min="20" max="100" oninput="up()"></div>
+      </div>
+      <div class="lbl">Watermark Size (px)</div>
+      <input type="number" id="ls-wm" value="150" min="60" max="260" oninput="up()">
+      <div class="lbl">Watermark Opacity (%)</div>
+      <input type="number" id="ls-wm-op" value="10" min="1" max="40" oninput="up()">
+    </div>
+
+  </div><!-- /tab-layout -->
+
+  <!-- ── TAB: BULK ── -->
+  <div class="tcontent" id="tab-bulk">
+
+    <div class="sec">
+      <div class="sec-title">CSV Import</div>
+      <div style="border:1.5px dashed var(--border);border-radius:6px;padding:12px;text-align:center;background:#fff;cursor:pointer;" onclick="document.getElementById('csvFile').click()">
+        <input type="file" id="csvFile" accept=".csv" onchange="parseCSV(this)" style="display:none">
+        <div style="font-size:24px;margin-bottom:4px;">📂</div>
+        <div style="font-size:10.5px;font-weight:700;margin-bottom:3px;">Click to Upload CSV</div>
+        <div style="font-size:9px;color:var(--muted);">Columns: name, gender, honor, section</div>
+      </div>
+      <button class="add-btn" style="margin-top:7px;" onclick="downloadSampleCSV()">⬇ Download Sample CSV</button>
+      <div class="info" style="margin-top:5px;">gender: male/female/non-binary &nbsp;|&nbsp; honor: With Honors / With High Honors / With Highest Honors</div>
+    </div>
+
+    <div class="sec" id="csv-table-sec" style="display:none;">
+      <div class="sec-title">Loaded: <span id="stu-count">0</span> students</div>
+      <div style="overflow:auto;max-height:280px;">
+        <table id="studentTable">
+          <thead><tr><th>#</th><th>Name</th><th>Honor</th><th>Sec.</th></tr></thead>
+          <tbody id="stu-tbody"></tbody>
+        </table>
+      </div>
+      <div class="info">Click a row to preview.</div>
+    </div>
+
+  </div><!-- /tab-bulk -->
+
+</div><!-- /panel -->
+
+<!-- ══════ PREVIEW ══════ -->
+<div class="preview-area" id="preview-area">
+  <div class="prev-toolbar">
+    <span class="zoom-lbl">Zoom</span>
+    <button class="btn btn-sec btn-sm" onclick="setZoom(.3)">30%</button>
+    <button class="btn btn-sec btn-sm" onclick="setZoom(.45)">45%</button>
+    <button class="btn btn-sec btn-sm" onclick="setZoom(.6)">60%</button>
+    <button class="btn btn-sec btn-sm" onclick="setZoom(.75)">75%</button>
+    <button class="btn btn-sec btn-sm" onclick="setZoom(1)">100%</button>
+    <span class="zoom-lbl" style="margin-left:6px;">Mode</span>
+    <button class="btn btn-sec btn-sm" onclick="setMode('single')" id="mode-single" style="border-color:var(--gold);">Single A4</button>
+    <button class="btn btn-sec btn-sm" onclick="setMode('dual')" id="mode-dual">Dual Legal</button>
+  </div>
+
+  <!-- SINGLE CERT -->
+  <div class="cert-wrapper" id="certWrapper">
+    <div class="cert" id="certificate"></div>
+  </div>
+
+  <!-- DUAL LEGAL PREVIEW (hidden by default)
+       Legal PORTRAIT = 216mm × 356mm
+       Two A4-landscape certs stacked top & bottom, each scaled to 72.73% to fit the width -->
+  <div class="dual-wrapper" id="dualWrapper" style="display:none;">
+    <div class="legal-paper" id="legalPaper">
+      <div class="cert-half">
+        <div class="cert" id="cert-left-dual"></div>
+      </div>
+      <div class="legal-divider"></div>
+      <div class="cert-half">
+        <div class="cert" id="cert-right-dual"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /preview-area -->
+</div><!-- /app-body -->
+
+<!-- SPINNER -->
+<div class="spinner-ov" id="spinner">
+  <div class="spin"></div>
+  <div id="spin-msg">Processing…</div>
+  <div id="spin-prog"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+// ═══ STATE ═══
+const logos = { left:null, rtop:null, rmid:null, wm:null };
+const bottomLogos = [];
+let signatories = [
+  { name:'MARILOU C. REMOROZA', pos:'Class Adviser', sig:null },
+  { name:'ALICIA I. QUINITO, PhD', pos:'Principal III', sig:null }
+];
+let students = [];
+let currentDesign = 'matatag';
+let previewMode = 'single';
+let currentZoom = .6;
+
+// Layout element positions (top, left in mm, width/height px)
+const EL_DEFS = [
+  { id:'header',    label:'Header Block',      defTop:12,  defLeft:130, defRight:110, visible:true },
+  { id:'title',     label:'Award Title',        defTop:40,  defLeft:72,  defRight:52,  visible:true },
+  { id:'given-to',  label:'"is given to"',      defTop:82,  defLeft:72,  defRight:52,  visible:true },
+  { id:'recipient', label:'Recipient Name',     defTop:88,  defLeft:72,  defRight:52,  visible:true },
+  { id:'details',   label:'Detail Lines',       defTop:120, defLeft:72,  defRight:52,  visible:true },
+  { id:'order',     label:'DepEd Order',        defTop:135, defLeft:72,  defRight:52,  visible:true },
+  { id:'date',      label:'Date Line',          defTop:143, defLeft:72,  defRight:52,  visible:true },
+  { id:'sigs',      label:'Signatories',        defTop:155, defLeft:72,  defRight:52,  visible:true },
+  { id:'bot-logos', label:'Bottom Logos Row',   defTop:178, defLeft:78,  defRight:null,visible:true },
+];
+const elState = {};
+EL_DEFS.forEach(e => {
+  elState[e.id] = { top:e.defTop, left:e.defLeft, right:e.defRight, visible:e.visible };
+});
+
+// ═══ DESIGNS ═══
+const DESIGNS = {
+  matatag: {
+    borderLeftColor: '#0a1a3e', borderLeftColor2: '#1a3a7c',
+    borderRightColor: '#0a1a3e', borderRightColor2: '#1a3a7c',
+    bgColor: '#ffffff',
+    headerColor: '#222', schoolNameColor: '#0a1a3e',
+    titleColor: '#0a1a3e', titleFontStyle: 'italic',
+    recipientColor: '#0a1a3e',
+    detailColor: '#222', sigNameColor: '#0a1a3e',
+    rightBlockColor: '#0a1a3e',
+    honorColorClass: { 'With Highest Honors':'hc-hh', 'With High Honors':'hc-h', 'With Honors':'hc-wh' }
+  },
+  gold: {
+    borderLeftColor: '#2c1810', borderLeftColor2: '#8B6914',
+    borderRightColor: '#2c1810', borderRightColor2: '#8B6914',
+    bgColor: '#fffdf7',
+    headerColor: '#2c1810', schoolNameColor: '#8B6914',
+    titleColor: '#2c1810', titleFontStyle: 'italic',
+    recipientColor: '#2c1810',
+    detailColor: '#2c1810', sigNameColor: '#8B6914',
+    rightBlockColor: '#8B6914',
+    honorColorClass: { 'With Highest Honors':'hc-hh', 'With High Honors':'hc-hh', 'With Honors':'hc-hh' }
+  },
+  green: {
+    borderLeftColor: '#0a3e1a', borderLeftColor2: '#1a7c3a',
+    borderRightColor: '#0a3e1a', borderRightColor2: '#1a7c3a',
+    bgColor: '#f7fffb',
+    headerColor: '#0a3e1a', schoolNameColor: '#0a3e1a',
+    titleColor: '#0a3e1a', titleFontStyle: 'italic',
+    recipientColor: '#0a3e1a',
+    detailColor: '#0a3e1a', sigNameColor: '#0a3e1a',
+    rightBlockColor: '#0a3e1a',
+    honorColorClass: { 'With Highest Honors':'hc-hh', 'With High Honors':'hc-h', 'With Honors':'hc-wh' }
+  },
+  red: {
+    borderLeftColor: '#3e0a0a', borderLeftColor2: '#9c2a2a',
+    borderRightColor: '#3e0a0a', borderRightColor2: '#9c2a2a',
+    bgColor: '#fff9f9',
+    headerColor: '#3e0a0a', schoolNameColor: '#9c2a2a',
+    titleColor: '#3e0a0a', titleFontStyle: 'italic',
+    recipientColor: '#3e0a0a',
+    detailColor: '#3e0a0a', sigNameColor: '#3e0a0a',
+    rightBlockColor: '#9c2a2a',
+    honorColorClass: { 'With Highest Honors':'hc-hh', 'With High Honors':'hc-red', 'With Honors':'hc-red' }
+  },
+  minimal: {
+    borderLeftColor: '#f0f0f0', borderLeftColor2: '#ddd',
+    borderRightColor: '#f0f0f0', borderRightColor2: '#ddd',
+    bgColor: '#ffffff',
+    headerColor: '#333', schoolNameColor: '#111',
+    titleColor: '#111', titleFontStyle: 'normal',
+    recipientColor: '#111',
+    detailColor: '#222', sigNameColor: '#111',
+    rightBlockColor: '#e0e0e0',
+    honorColorClass: { 'With Highest Honors':'hc-hh', 'With High Honors':'hc-h', 'With Honors':'hc-wh' }
+  },
+  royal: {
+    borderLeftColor: '#1a0a3e', borderLeftColor2: '#4a1a7c',
+    borderRightColor: '#1a0a3e', borderRightColor2: '#4a1a7c',
+    bgColor: '#fdfcff',
+    headerColor: '#1a0a3e', schoolNameColor: '#4a1a7c',
+    titleColor: '#1a0a3e', titleFontStyle: 'italic',
+    recipientColor: '#1a0a3e',
+    detailColor: '#1a0a3e', sigNameColor: '#4a1a7c',
+    rightBlockColor: '#4a1a7c',
+    honorColorClass: { 'With Highest Honors':'hc-hh', 'With High Honors':'hc-h', 'With Honors':'hc-wh' }
+  }
+};
+
+// ═══ INIT ═══
+window.onload = () => {
+  renderSigControls();
+  renderLayoutCards();
+  setDesign('matatag');
+  setZoom(.6);
+  up();
+};
+
+// ═══ TABS ═══
+function switchTab(name) {
+  const names = ['design','content','layout','bulk'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i]===name));
+  document.querySelectorAll('.tcontent').forEach(tc => tc.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+// ═══ MODE ═══
+function setMode(m) {
+  previewMode = m;
+  document.getElementById('certWrapper').style.display = m==='single' ? 'block' : 'none';
+  document.getElementById('dualWrapper').style.display = m==='dual' ? 'block' : 'none';
+  document.getElementById('mode-single').style.borderColor = m==='single' ? 'var(--gold)' : 'rgba(255,255,255,.22)';
+  document.getElementById('mode-dual').style.borderColor = m==='dual' ? 'var(--gold)' : 'rgba(255,255,255,.22)';
+  up();
+}
+
+// ═══ DESIGN ═══
+function setDesign(name) {
+  currentDesign = name;
+  document.querySelectorAll('.variant-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(`dv-${name}`).classList.add('selected');
+  up();
+}
+
+// ═══ LOGOS ═══
+function loadLogo(input, key) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    logos[key] = e.target.result;
+    const p = document.getElementById(`prev-${key}`);
+    const l = document.getElementById(`lbl-${key}`);
+    if (p) { p.src = e.target.result; p.style.display='block'; }
+    if (l) l.textContent = f.name.substring(0,14);
+    up();
+  };
+  r.readAsDataURL(f);
+}
+
+function loadBottomLogos(input) {
+  bottomLogos.length = 0;
+  const files = Array.from(input.files).slice(0,3);
+  let done = 0;
+  files.forEach((f,i) => {
+    const r = new FileReader();
+    r.onload = e => { bottomLogos[i] = e.target.result; done++; if (done===files.length) up(); };
+    r.readAsDataURL(f);
+  });
+}
+
+// ═══ SIGNATORIES ═══
+function renderSigControls() {
+  const c = document.getElementById('sig-container');
+  c.innerHTML = '';
+  signatories.forEach((s,i) => {
+    const d = document.createElement('div');
+    d.className = 'sig-row';
+    d.innerHTML = `
+      <div class="sig-top">
+        <div class="sf">
+          <input type="text" value="${s.name}" placeholder="Full Name" oninput="signatories[${i}].name=this.value;up()">
+          <input type="text" value="${s.pos}" placeholder="Position" oninput="signatories[${i}].pos=this.value;up()" style="margin-top:3px;">
+          <label class="upload-btn" style="margin-top:4px;font-size:8.5px;">
+            <input type="file" accept="image/*" onchange="loadSig(this,${i})">
+            <span>${s.sig?'✓ Signature set':'+ Upload Signature'}</span>
+          </label>
+        </div>
+        <button class="del-btn" onclick="removeSig(${i})">✕</button>
+      </div>`;
+    c.appendChild(d);
+  });
+}
+function addSig() { signatories.push({name:'',pos:'',sig:null}); renderSigControls(); up(); }
+function removeSig(i) { signatories.splice(i,1); renderSigControls(); up(); }
+function loadSig(input,i) {
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=e=>{signatories[i].sig=e.target.result;renderSigControls();up();}; r.readAsDataURL(f);
+}
+
+// ═══ LAYOUT CARDS ═══
+function renderLayoutCards() {
+  const c = document.getElementById('layout-cards');
+  c.innerHTML = '';
+  EL_DEFS.forEach(e => {
+    const st = elState[e.id];
+    const d = document.createElement('div');
+    d.className = 'el-card';
+    d.innerHTML = `
+      <div class="el-card-header">
+        <span class="el-card-title">${e.label}</span>
+        <div class="el-card-toggle ${st.visible?'on':''}" id="tog-${e.id}" onclick="toggleEl('${e.id}')"></div>
+      </div>
+      <div class="slider-row">
+        <span class="slider-lbl">Top mm</span>
+        <input type="range" min="0" max="195" step=".5" value="${st.top}" oninput="setElTop('${e.id}',this.value)">
+        <span class="slider-val" id="sv-top-${e.id}">${st.top}</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-lbl">Left px</span>
+        <input type="range" min="0" max="400" step="1" value="${st.left}" oninput="setElLeft('${e.id}',this.value)">
+        <span class="slider-val" id="sv-left-${e.id}">${st.left}</span>
+      </div>
+      ${e.defRight!==null?`
+      <div class="slider-row">
+        <span class="slider-lbl">Right px</span>
+        <input type="range" min="0" max="300" step="1" value="${st.right}" oninput="setElRight('${e.id}',this.value)">
+        <span class="slider-val" id="sv-right-${e.id}">${st.right}</span>
+      </div>`:''}`;
+    c.appendChild(d);
+  });
+}
+
+function toggleEl(id) {
+  elState[id].visible = !elState[id].visible;
+  const tog = document.getElementById(`tog-${id}`);
+  tog.classList.toggle('on', elState[id].visible);
+  up();
+}
+function setElTop(id,v) { elState[id].top=parseFloat(v); document.getElementById(`sv-top-${id}`).textContent=v; up(); }
+function setElLeft(id,v) { elState[id].left=parseFloat(v); document.getElementById(`sv-left-${id}`).textContent=v; up(); }
+function setElRight(id,v) { elState[id].right=parseFloat(v); document.getElementById(`sv-right-${id}`).textContent=v; up(); }
+
+// ═══ HONOR ═══
+function honorClass(honor, design) {
+  const d = DESIGNS[design];
+  return d.honorColorClass[honor] || 'hc-wh';
+}
+
+// ═══ BUILD CERTIFICATE HTML ═══
+function buildCertHTML(data, design, isHalf) {
+  const d = DESIGNS[design];
+  const g = id => document.getElementById(id);
+  const v = id => g(id)?.value ?? '';
+
+  const studentName = data.name || v('studentName');
+  const gender = data.gender || v('gender');
+  const section = data.section || v('section');
+  const honor = data.honor || v('honorLevel');
+  const quarter = v('quarter');
+  const sy = v('schoolYear');
+  const day = v('certDay').trim();
+  const mony = v('certMonthYear');
+  const venue = v('venue');
+  const customBody = v('customBody').trim();
+
+  const hdrTop = elState['header'].top;
+  const hdrLeft = elState['header'].left;
+  const hdrRight = elState['header'].right;
+  const vis = id => elState[id].visible ? '' : 'display:none;';
+
+  const fontTitle = v('font-title') || "'Playfair Display',serif";
+  const fontBody  = v('font-body')  || "'Libre Baskerville',serif";
+  const fsHeader = v('fs-header') || 8.5;
+  const fsSchool = v('fs-school') || 12;
+  const fsTitle  = v('fs-title')  || 30;
+  const fsRecip  = v('fs-recipient') || 22;
+  const fsDet    = v('fs-details') || 9;
+  const fsSig    = v('fs-sig')    || 9;
+
+  const blW = parseInt(v('border-left-w')) || 68;
+  const brW = parseInt(v('border-right-w')) || 48;
+
+  const lsLeft = parseInt(v('ls-left')) || 46;
+  const lsRtop = parseInt(v('ls-rtop')) || 46;
+  const lsRmid = parseInt(v('ls-rmid')) || 50;
+  const lsWm   = parseInt(v('ls-wm'))   || 150;
+  const wmOp   = (parseInt(v('ls-wm-op')) || 10) / 100;
+
+  const hc = honorClass(honor, design);
+
+  // halfW for dual mode
+  const certW = isHalf ? '178mm' : '297mm';
+  const certH = isHalf ? '216mm' : '210mm';
+
+  // Header block
+  const headerHTML = `
+    <div style="${vis('header')}position:absolute;top:${elState['header'].top}mm;left:${elState['header'].left}px;right:${elState['header'].right}px;text-align:center;">
+      <div style="font-family:'Montserrat',sans-serif;font-size:${fsHeader}pt;color:${d.headerColor};line-height:1.55;">${v('hdr1')}</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:${fsHeader}pt;color:${d.headerColor};line-height:1.55;">${v('hdr2')}</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:${fsHeader}pt;color:${d.headerColor};line-height:1.55;">${v('hdr3')}</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:${fsHeader}pt;color:${d.headerColor};line-height:1.55;">${v('hdr4')}</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:${fsSchool}pt;font-weight:700;color:${d.schoolNameColor};margin:2px 0 1px;">${v('schoolName')}</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:${Math.max(6,fsHeader-0.5)}pt;color:${d.headerColor};">${v('schoolAddr')}</div>
+    </div>`;
+
+  // Award title
+  const titleHTML = `
+    <div style="${vis('title')}position:absolute;top:${elState['title'].top}mm;left:${elState['title'].left}px;right:${elState['title'].right}px;text-align:center;font-family:${fontTitle};font-style:${d.titleFontStyle};font-size:${fsTitle}pt;font-weight:700;color:${d.titleColor};letter-spacing:1px;line-height:1;">
+      ${v('awardTitle')}
+    </div>`;
+
+  // "is given to"
+  const givenToHTML = `
+    <div style="${vis('given-to')}position:absolute;top:${elState['given-to'].top}mm;left:${elState['given-to'].left}px;right:${elState['given-to'].right}px;text-align:center;font-family:${fontBody};font-size:${fsDet}pt;color:${d.detailColor};font-style:italic;">
+      ${v('givenToText')}
+    </div>`;
+
+  // Recipient
+  const recipHTML = `
+    <div style="${vis('recipient')}position:absolute;top:${elState['recipient'].top}mm;left:${elState['recipient'].left}px;right:${elState['recipient'].right}px;text-align:center;">
+      <span style="font-family:${fontBody};font-size:${fsRecip}pt;font-weight:700;color:${d.recipientColor};border-bottom:2px solid ${d.recipientColor};display:inline-block;min-width:180px;padding-bottom:1mm;line-height:1.2;">${studentName}</span>
+    </div>`;
+
+  // Details
+  const detailBody = customBody
+    ? `<div style="text-align:center;">${customBody}</div>`
+    : `
+      <div style="display:flex;align-items:baseline;gap:3px;flex-wrap:wrap;justify-content:center;line-height:1.9;">
+        of &nbsp;<span style="border-bottom:1.5px solid ${d.detailColor};min-width:70px;display:inline-block;text-align:center;font-weight:700;">${section}</span>&nbsp;
+        for &nbsp;${gender}&nbsp; commendable academic performance
+      </div>
+      <div style="display:flex;align-items:baseline;gap:3px;flex-wrap:wrap;justify-content:center;margin-top:1mm;">
+        (&nbsp;<span class="${hc}" style="font-weight:700;font-style:italic;border-bottom:1.5px solid;">${honor}</span>&nbsp;)
+        this &nbsp;<span style="font-weight:700;text-decoration:underline;color:${d.titleColor};">${quarter}</span>&nbsp;
+        of School Year &nbsp;<span style="border-bottom:1.5px solid ${d.detailColor};min-width:55px;display:inline-block;text-align:center;font-weight:700;">${sy}</span>
+      </div>`;
+
+  const detailsHTML = `
+    <div style="${vis('details')}position:absolute;top:${elState['details'].top}mm;left:${elState['details'].left}px;right:${elState['details'].right}px;font-family:${fontBody};font-size:${fsDet}pt;color:${d.detailColor};">
+      ${detailBody}
+    </div>`;
+
+  // Order
+  const orderHTML = `
+    <div style="${vis('order')}position:absolute;top:${elState['order'].top}mm;left:${elState['order'].left}px;right:${elState['order'].right}px;text-align:center;font-family:${fontBody};font-size:${Math.max(6,fsDet-0.5)}pt;color:${d.detailColor};">
+      ${v('depedOrder')}
+    </div>`;
+
+  // Date
+  const dateHTML = `
+    <div style="${vis('date')}position:absolute;top:${elState['date'].top}mm;left:${elState['date'].left}px;right:${elState['date'].right}px;text-align:center;font-family:${fontBody};font-size:${fsDet}pt;font-style:italic;color:${d.detailColor};">
+      <em>Given this &nbsp;<span style="border-bottom:1.5px solid ${d.detailColor};min-width:22px;display:inline-block;text-align:center;font-style:normal;">${day||'&nbsp;&nbsp;&nbsp;&nbsp;'}</span>&nbsp;
+      day of &nbsp;<span style="font-weight:700;border-bottom:1.5px solid ${d.detailColor};font-style:normal;">${mony}</span>&nbsp;
+      at ${venue}</em>
+    </div>`;
+
+  // Signatories
+  const sigBlocks = signatories.map(s => `
+    <div style="text-align:center;min-width:90px;">
+      ${s.sig ? `<img src="${s.sig}" style="height:28px;object-fit:contain;display:block;margin:0 auto 2px;">` : ''}
+      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:${fsSig}pt;color:${d.sigNameColor};border-top:1.5px solid ${d.sigNameColor};padding-top:2px;">${s.name}</div>
+      <div style="font-family:${fontBody};font-style:italic;font-size:${Math.max(6,fsSig-0.5)}pt;color:${d.detailColor};margin-top:1px;">${s.pos}</div>
+    </div>`).join('');
+
+  const sigsHTML = `
+    <div style="${vis('sigs')}position:absolute;top:${elState['sigs'].top}mm;left:${elState['sigs'].left}px;right:${elState['sigs'].right}px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:4mm;">
+      ${sigBlocks}
+    </div>`;
+
+  // Bottom logos
+  const botImgs = bottomLogos.map(src => src ? `<img src="${src}" style="height:26px;object-fit:contain;">` : '').join('');
+  const botHTML = `
+    <div style="${vis('bot-logos')}position:absolute;top:${elState['bot-logos'].top}mm;left:${elState['bot-logos'].left}px;display:flex;gap:7px;align-items:center;">
+      ${botImgs}
+    </div>`;
+
+  // Logos
+  const logoLeft = logos.left ? `<img src="${logos.left}" style="position:absolute;top:10mm;left:${blW+7}px;width:${lsLeft}px;height:${lsLeft}px;object-fit:contain;">` : '';
+  const logoRtop = logos.rtop ? `<img src="${logos.rtop}" style="position:absolute;top:10mm;right:${brW+6}px;width:${lsRtop}px;height:${lsRtop}px;object-fit:contain;">` : '';
+  const logoRmid = logos.rmid ? `<img src="${logos.rmid}" style="position:absolute;top:60mm;right:6px;width:${lsRmid}px;height:${lsRmid}px;object-fit:contain;">` : '';
+  const logoWm   = logos.wm   ? `<img src="${logos.wm}"   style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${lsWm}px;height:${lsWm}px;opacity:${wmOp};object-fit:contain;pointer-events:none;">` : '';
+
+  // Right block (placeholder rect, replaced by uploaded logos)
+  const rightBlock = `
+    <div style="position:absolute;top:7mm;right:0;width:${brW}px;height:42%;background:${d.rightBlockColor};display:${logos.rtop?'none':'block'};"></div>`;
+
+  // SVG borders
+  const leftBorderSVG = `
+    <svg style="position:absolute;left:0;top:0;width:${blW}px;height:100%;" viewBox="0 0 68 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="68" height="800" fill="${d.borderLeftColor}"/>
+      <polygon points="0,0 68,0 28,100 68,200 28,300 68,400 28,500 68,600 28,700 68,800 0,800" fill="${d.borderLeftColor2}"/>
+      <polygon points="68,0 68,200 28,100" fill="${d.borderLeftColor}" opacity=".35"/>
+      <polygon points="68,200 68,400 28,300" fill="${d.borderLeftColor}" opacity=".35"/>
+      <polygon points="68,400 68,600 28,500" fill="${d.borderLeftColor}" opacity=".35"/>
+      <polygon points="68,600 68,800 28,700" fill="${d.borderLeftColor}" opacity=".35"/>
+    </svg>`;
+
+  const rightBorderSVG = `
+    <svg style="position:absolute;right:0;top:0;width:${brW}px;height:100%;" viewBox="0 0 48 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="48" height="800" fill="${d.borderRightColor}"/>
+      <polygon points="48,0 0,0 38,100 0,200 38,300 0,400 38,500 0,600 38,700 0,800 48,800" fill="${d.borderRightColor2}"/>
+    </svg>`;
+
+  return `
+    ${leftBorderSVG}
+    ${rightBorderSVG}
+    ${logoLeft}${logoRtop}${logoRmid}${logoWm}
+    ${headerHTML}
+    ${titleHTML}
+    ${givenToHTML}
+    ${recipHTML}
+    ${detailsHTML}
+    ${orderHTML}
+    ${dateHTML}
+    ${sigsHTML}
+    ${botHTML}
+  `;
+}
+
+// ═══ UPDATE PREVIEW ═══
+function up() {
+  const d = DESIGNS[currentDesign];
+  const data = {};
+
+  if (previewMode === 'single') {
+    const cert = document.getElementById('certificate');
+    cert.style.background = d.bgColor;
+    cert.innerHTML = buildCertHTML(data, currentDesign, false);
+  } else {
+    // Dual legal mode: both halves render full A4 landscape certs (297×210mm),
+    // CSS scale(0.7273) inside .cert-half scales them to fit the 216mm-wide legal portrait sheet.
+    const left = document.getElementById('cert-left-dual');
+    const right = document.getElementById('cert-right-dual');
+    left.style.background = d.bgColor;
+    left.innerHTML = buildCertHTML(data, currentDesign, false);
+    // Right side: if a second student is queued, use them; otherwise same as left
+    const rightData = (students.length > 1 && window._dualSecond != null)
+      ? window._dualSecond : data;
+    right.style.background = d.bgColor;
+    right.innerHTML = buildCertHTML(rightData, currentDesign, false);
+  }
+}
+
+// ═══ ZOOM ═══
+function setZoom(z) {
+  currentZoom = z;
+  const mmToPx = 3.7795;
+  if (previewMode==='single' || true) {
+    const w = document.getElementById('certWrapper');
+    w.style.transform = `scale(${z})`;
+    w.style.width  = (297 * mmToPx * z) + 'px';
+    w.style.height = (210 * mmToPx * z) + 'px';
+  }
+  const dw = document.getElementById('dualWrapper');
+  dw.style.transform = `scale(${z})`;
+  dw.style.width  = (216 * mmToPx * z) + 'px';
+  dw.style.height = (356 * mmToPx * z) + 'px';
+}
+
+// ═══ CSV ═══
+function parseCSV(input) {
+  const f = input.files[0]; if(!f) return;
+  Papa.parse(f, {
+    skipEmptyLines: true,
+    complete: res => {
+      students = [];
+      res.data.forEach((row,i) => {
+        if(i===0 && (row[0]||'').toLowerCase().includes('name')) return;
+        if(!row[0]?.trim()) return;
+        const gv = (row[1]||'').toLowerCase();
+        const gender = gv.includes('f')?'her':gv.includes('non')||gv.includes('they')?'their':'his';
+        students.push({ name:(row[0]||'').trim(), gender, honor:(row[2]||'With Honors').trim(), section:(row[3]||'').trim() });
+      });
+      renderStudentTable();
+    }
+  });
+}
+
+function hBadgeCls(honor) {
+  const h = honor.toLowerCase();
+  return h.includes('highest')?'hbadge-hh': h.includes('high')?'hbadge-h':'hbadge-wh';
+}
+
+function renderStudentTable() {
+  document.getElementById('csv-table-sec').style.display='block';
+  document.getElementById('stu-count').textContent = students.length;
+  const tb = document.getElementById('stu-tbody');
+  tb.innerHTML = '';
+  students.forEach((s,i) => {
+    const tr = document.createElement('tr');
+    tr.onclick = () => previewStudent(i);
+    tr.innerHTML = `<td>${i+1}</td><td>${s.name}</td><td><span class="hbadge ${hBadgeCls(s.honor)}">${s.honor}</span></td><td>${s.section}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function previewStudent(i) {
+  const s = students[i];
+  document.getElementById('studentName').value = s.name;
+  document.getElementById('gender').value = s.gender;
+  document.getElementById('honorLevel').value = s.honor;
+  document.getElementById('section').value = s.section;
+  up(); switchTab('content');
+}
+
+function downloadSampleCSV() {
+  const csv=`name,gender,honor,section\nJuan Dela Cruz,male,With Honors,Grade 3 - Fair\nMaria Santos,female,With High Honors,Grade 4 - Mabini\nAlex Reyes,non-binary,With Highest Honors,Grade 5 - Rizal`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='sample_students.csv'; a.click();
+}
+
+// ═══ PDF CAPTURE ═══
+async function captureCert(el) {
+  return await html2canvas(el, { scale:2.5, useCORS:true, allowTaint:true, backgroundColor: DESIGNS[currentDesign].bgColor || '#fff' });
+}
+
+async function downloadSinglePDF() {
+  showSpinner('Rendering certificate…');
+  try {
+    const el = previewMode==='single' ? document.getElementById('certificate') : document.getElementById('legalPaper');
+    const canvas = await captureCert(el);
+    const { jsPDF } = window.jspdf;
+    const isLegal = previewMode==='dual';
+    // Legal dual = portrait 216×356mm; single A4 cert = landscape 297×210mm
+    const pdf = new jsPDF({ orientation: isLegal ? 'portrait' : 'landscape', unit:'mm', format: isLegal ? [216, 356] : 'a4' });
+    const w = isLegal ? 216 : 297, h = isLegal ? 356 : 210;
+    pdf.addImage(canvas.toDataURL('image/jpeg',.95),'JPEG',0,0,w,h);
+    const name = document.getElementById('studentName').value || 'certificate';
+    pdf.save(`${name.replace(/\s+/g,'-')}.pdf`);
+  } catch(e) { alert('Error: '+e.message); }
+  hideSpinner();
+}
+
+async function downloadDualLegal() {
+  setMode('dual');
+  await sleep(200);
+  showSpinner('Rendering dual legal certificate…');
+  try {
+    const { jsPDF } = window.jspdf;
+    // Legal PORTRAIT: 216mm wide × 356mm tall
+    // Two A4 landscape certs (297×210mm) stacked top and bottom.
+    // Each cert scaled to fit width 216mm: scale = 216/297 ≈ 0.7273
+    // Scaled cert dimensions: 216mm wide × 152.7mm tall
+    // Total height used: 152.7 × 2 + divider ≈ 306mm, centered in 356mm
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'legal' });
+    // jsPDF legal = 215.9 × 355.6mm
+
+    const topEl = document.getElementById('cert-left-dual');
+    const botEl = document.getElementById('cert-right-dual');
+
+    // Remove CSS scale temporarily for clean capture
+    topEl.style.transform = 'none';
+    botEl.style.transform = 'none';
+    await sleep(80);
+
+    const bg = DESIGNS[currentDesign].bgColor || '#fff';
+    const canvasT = await html2canvas(topEl, { scale: 2.5, useCORS: true, allowTaint: true, backgroundColor: bg });
+    const canvasB = await html2canvas(botEl, { scale: 2.5, useCORS: true, allowTaint: true, backgroundColor: bg });
+
+    // Restore CSS scale
+    topEl.style.transform = 'scale(0.7273)';
+    botEl.style.transform = 'scale(0.7273)';
+
+    // Place certs on legal portrait: scale each to full width (215.9mm)
+    const pageW = 215.9;
+    const pageH = 355.6;
+    const certW = pageW;                    // 215.9mm
+    const certH = 210 * (pageW / 297);      // ≈ 152.6mm (preserving A4 landscape ratio)
+    const totalH = certH * 2 + 2;           // 2mm divider gap
+    const marginTop = (pageH - totalH) / 2; // center vertically
+
+    pdf.addImage(canvasT.toDataURL('image/jpeg', .95), 'JPEG', 0, marginTop, certW, certH);
+    pdf.addImage(canvasB.toDataURL('image/jpeg', .95), 'JPEG', 0, marginTop + certH + 2, certW, certH);
+
+    pdf.save('dual-certificate-legal-portrait.pdf');
+  } catch(e) { alert('Error generating PDF: ' + e.message); }
+  hideSpinner();
+}
+
+async function bulkGenerate() {
+  if(!students.length) { alert('Upload a CSV file first (Bulk tab).'); return; }
+  // ensure single mode for rendering
+  const prevMode = previewMode;
+  setMode('single');
+  await sleep(80);
+  showSpinner('Starting bulk generation…');
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+
+  for(let i=0;i<students.length;i++) {
+    const s = students[i];
+    document.getElementById('spin-msg').textContent = `Generating ${i+1}/${students.length}`;
+    document.getElementById('spin-prog').textContent = s.name;
+    document.getElementById('studentName').value = s.name;
+    document.getElementById('gender').value = s.gender;
+    document.getElementById('honorLevel').value = s.honor;
+    document.getElementById('section').value = s.section;
+    up(); await sleep(120);
+    const canvas = await captureCert(document.getElementById('certificate'));
+    if(i>0) pdf.addPage();
+    pdf.addImage(canvas.toDataURL('image/jpeg',.92),'JPEG',0,0,297,210);
+  }
+  pdf.save('bulk-certificates.pdf');
+  setMode(prevMode);
+  hideSpinner();
+}
+
+function printCurrent() { window.print(); }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function showSpinner(msg) { document.getElementById('spin-msg').textContent=msg; document.getElementById('spinner').classList.add('show'); }
+function hideSpinner() { document.getElementById('spin-prog').textContent=''; document.getElementById('spinner').classList.remove('show'); }
+</script>
+</body>
+</html>
